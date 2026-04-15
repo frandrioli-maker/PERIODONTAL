@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="description" content="PerioDental - Sistema profesional de periodontograma sin conexión">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PerioDental">
+    
+    <title>PerioDental</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --accent: #ff6b35;
+            --success: #00b894;
+            --danger: #d63031;
+            --gray-light: #f5f6fa;
+            --gray-medium: #dfe6e9;
+            --gray-dark: #2d3436;
+        }
+        html, body { height: 100%; width: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--gray-dark);
+            padding-top: max(0px, env(safe-area-inset-top));
+            overflow: hidden;
+        }
+        .container { display: flex; height: 100vh; flex-direction: column; }
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0052a3 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 { font-size: 1.6em; margin-bottom: 3px; font-weight: 700; }
+        .header p { opacity: 0.95; font-size: 0.8em; }
+        .main { display: grid; grid-template-columns: 200px 1fr; gap: 0; flex: 1; overflow: hidden; }
+        @media (max-width: 768px) {
+            .main { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .sidebar.active { display: block; position: absolute; left: 0; top: 60px; width: 200px; height: calc(100vh - 60px); z-index: 100; }
+        }
+        .sidebar {
+            background: var(--gray-light);
+            padding: 12px;
+            border-right: 1px solid var(--gray-medium);
+            overflow-y: auto;
+        }
+        .sidebar-title { font-size: 0.8em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .content { padding: 15px; overflow-y: auto; background: white; }
+        .section { margin-bottom: 15px; }
+        .section-title { font-size: 0.95em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 4px; font-size: 0.8em; font-weight: 600; }
+        input[type="text"], input[type="date"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gray-medium);
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-family: inherit;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; width: 100%; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #00a874 100%); color: white; width: 100%; margin-top: 8px; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%); color: white; width: 100%; margin-top: 8px; font-size: 0.8em; }
+        .btn-secondary { background: white; color: var(--primary); border: 2px solid var(--primary); width: 100%; }
+        .mode-btn {
+            flex: 1;
+            padding: 6px 8px;
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--gray-medium);
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.75em;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-color: var(--primary);
+        }
+        .mode-buttons { display: flex; gap: 6px; margin-bottom: 12px; }
+        .teeth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        .tooth-btn {
+            padding: 6px;
+            background: var(--gray-light);
+            border: 2px solid var(--gray-medium);
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .tooth-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-color: var(--primary);
+        }
+        .tooth-btn.filled { background: rgba(0, 184, 148, 0.15); border-color: var(--success); }
+        .data-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
+        @media (max-width: 768px) { .data-grid { grid-template-columns: 1fr; } }
+        .patient-item {
+            padding: 8px;
+            background: white;
+            border: 1px solid var(--gray-medium);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .patient-item.active { background: rgba(0, 102, 204, 0.1); border: 2px solid var(--primary); }
+        .patient-name { font-weight: 600; color: var(--primary); }
+        .patient-id { font-size: 0.7em; color: #95a5a6; margin-top: 2px; }
+        .alert { padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8em; display: none; }
+        .alert.show { display: block; }
+        .alert-success { background: #e8f5e9; border-left: 4px solid var(--success); color: #1b5e20; }
+        .alert-error { background: #ffebee; border-left: 4px solid var(--danger); color: #b71c1c; }
+        .stats { background: var(--gray-light); padding: 8px; border-radius: 6px; font-size: 0.75em; margin-bottom: 10px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .stat-label { font-weight: 600; }
+        .stat-value { color: var(--primary); font-weight: 700; }
+        .mic-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            font-size: 1.8em;
+            cursor: pointer;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        .mic-button.listening {
+            background: linear-gradient(135deg, var(--accent) 0%, #ff5722 100%);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 4px rgba(255, 107, 53, 0.2);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 4px rgba(255, 107, 53, 0.2); }
+            50% { box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 8px rgba(255, 107, 53, 0.1); }
+        }
+        .voice-box { text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px; }
+        .voice-status { font-size: 0.8em; color: #95a5a6; margin-bottom: 8px; }
+        .voice-transcript { background: white; padding: 8px; border-radius: 6px; min-height: 30px; display: none; word-wrap: break-word; font-size: 0.85em; margin-bottom: 8px; }
+        .menu-toggle { display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; font-size: 1.3em; z-index: 99; }
+        @media (max-width: 768px) { .menu-toggle { display: flex; align-items: center; justify-content: center; } }
+        .install-prompt { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; }
+        .install-prompt.show { display: block; }
+        .install-prompt h3 { color: var(--primary); margin-bottom: 8px; font-size: 0.9em; }
+        .install-prompt p { color: #95a5a6; font-size: 0.8em; margin-bottom: 8px; }
+        .install-prompt-buttons { display: flex; gap: 8px; }
+        .install-prompt-buttons button { flex: 1; margin: 0; padding: 6px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦷 PerioDental</h1>
+            <p>Sistema de Periodontograma - Sin Conexión</p>
+        </div>
+
+        <div class="main">
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-title">👥 Pacientes</div>
+                <div class="form-group">
+                    <input type="text" id="patientName" placeholder="Nombre" style="margin-bottom: 6px;">
+                    <input type="text" id="patientLastName" placeholder="Apellidos" style="margin-bottom: 6px;">
+                    <input type="date" id="patientBirthdate" style="margin-bottom: 6px;">
+                    <input type="text" id="patientID" placeholder="ID (P-001)" style="margin-bottom: 6px;">
+                    <button class="btn-primary" onclick="addPatient()">➕ Nuevo</button>
+                </div>
+                <div id="patientsList" style="max-height: 250px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="content">
+                <div id="noPatient" style="text-align: center; padding: 30px;">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">👤</div>
+                    <p style="color: #95a5a6;">Crea un paciente para comenzar</p>
+                </div>
+
+                <div id="patientContent" style="display: none;">
+                    <div class="section">
+                        <div class="section-title">🦷 Piezas (1-32)</div>
+                        <div class="teeth-grid" id="teethGrid"></div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">📝 Entrada</div>
+                        <div class="mode-buttons">
+                            <button class="mode-btn active" onclick="switchMode('voice')">🎤</button>
+                            <button class="mode-btn" onclick="switchMode('text')">⌨️</button>
+                            <button class="mode-btn" onclick="switchMode('form')">📋</button>
+                        </div>
+                    </div>
+
+                    <div id="voiceMode" class="section">
+                        <div class="voice-box">
+                            <button class="mic-button" id="micButton" onclick="toggleVoice()">🎤</button>
+                            <div class="voice-status" id="voiceStatus">Presiona para hablar</div>
+                            <div class="voice-transcript" id="voiceTranscript"></div>
+                        </div>
+                    </div>
+
+                    <div id="textMode" class="section" style="display: none;">
+                        <textarea id="textInput" placeholder="Ej: Pieza 18, prof 3, sangrado sí..."></textarea>
+                        <button class="btn-primary" onclick="processText()" style="margin-top: 8px;">Procesar</button>
+                    </div>
+
+                    <div id="formMode" class="section" style="display: none;"></div>
+
+                    <div class="section" id="dataSection" style="display: none;">
+                        <div class="section-title" id="selectedToothTitle">Pieza #</div>
+                        <div class="data-grid">
+                            <div class="form-group">
+                                <label>Margen (mm)</label>
+                                <input type="number" id="gingivialMargin" step="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Prof. (mm)</label>
+                                <input type="number" id="probeDepth" step="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Inserc. (mm)</label>
+                                <input type="number" id="attachmentLevel" step="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Sangrado</label>
+                                <select id="bleeding">
+                                    <option value="">-</option>
+                                    <option value="0">No</option>
+                                    <option value="1">Sí</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Placa</label>
+                                <select id="plaque">
+                                    <option value="">-</option>
+                                    <option value="0">No</option>
+                                    <option value="1">Sí</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Furcación</label>
+                                <input type="number" id="furcation" min="0" max="3">
+                            </div>
+                            <div class="form-group">
+                                <label>Movilidad</label>
+                                <input type="number" id="mobility" min="0" max="3">
+                            </div>
+                            <div class="form-group">
+                                <label>Implante</label>
+                                <select id="implant">
+                                    <option value="0">No</option>
+                                    <option value="1">Sí</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-success" onclick="saveTooth()">✓ Guardar</button>
+
+                        <div class="stats">
+                            <div class="stat-row">
+                                <span class="stat-label">Piezas:</span>
+                                <span class="stat-value" id="completedTeeth">0/32</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">BOP:</span>
+                                <span class="stat-value" id="bopPercent">0%</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">PI:</span>
+                                <span class="stat-value" id="piPercent">0%</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-secondary" onclick="exportExcel()" style="margin-bottom: 6px;">📊 Excel</button>
+                        <button class="btn-secondary" onclick="exportCSV()" style="margin-bottom: 6px;">📄 CSV</button>
+                        <button class="btn-secondary" onclick="printPatient()" style="margin-bottom: 6px;">🖨️ Imprimir</button>
+                        <button class="btn-danger" onclick="deletePatient()">🗑️ Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
+    <div id="alertSuccess" class="alert alert-success"></div>
+    <div id="alertError" class="alert alert-error"></div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+
+        let patients = JSON.parse(localStorage.getItem('patients')) || [];
+        let currentPatientId = null;
+        let selectedTooth = null;
+        let voiceRec = null;
+        let isListening = false;
+
+        // SERVICE WORKER
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            const installPrompt = document.getElementById('installPrompt');
+            installPrompt.querySelector('button:last-child').onclick = async () => {
+                e.prompt();
+                installPrompt.classList.remove('show');
+            };
+            installPrompt.classList.add('show');
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function showAlert(msg, type) {
+            const el = type === 'success' ? document.getElementById('alertSuccess') : document.getElementById('alertError');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // PACIENTES
+        function addPatient() {
+            const name = document.getElementById('patientName').value.trim();
+            const lastName = document.getElementById('patientLastName').value.trim();
+            const birthdate = document.getElementById('patientBirthdate').value;
+            const patientID = document.getElementById('patientID').value.trim();
+
+            if (!name || !lastName || !patientID) {
+                showAlert('Completa todos los campos', 'error');
+                return;
+            }
+
+            const patient = {
+                id: Date.now().toString(),
+                name, lastName, birthdate, patientID,
+                teeth: {}
+            };
+
+            for (let i = 1; i <= 32; i++) {
+                patient.teeth[i] = {
+                    gingivialMargin: '', probeDepth: '', attachmentLevel: '',
+                    plaque: '', bleeding: '', furcation: '', mobility: '', implant: '0'
+                };
+            }
+
+            patients.push(patient);
+            localStorage.setItem('patients', JSON.stringify(patients));
+
+            document.getElementById('patientName').value = '';
+            document.getElementById('patientLastName').value = '';
+            document.getElementById('patientBirthdate').value = '';
+            document.getElementById('patientID').value = '';
+
+            renderPatients();
+            showAlert('Paciente creado ✓', 'success');
+        }
+
+        function renderPatients() {
+            const list = document.getElementById('patientsList');
+            list.innerHTML = patients.length ? '' : '<p style="color: #95a5a6; font-size: 0.8em;">Sin pacientes</p>';
+
+            patients.forEach(p => {
+                const div = document.createElement('div');
+                div.className = `patient-item ${p.id === currentPatientId ? 'active' : ''}`;
+                div.onclick = () => selectPatient(p.id);
+                div.innerHTML = `<div class="patient-name">${p.name} ${p.lastName}</div><div class="patient-id">${p.patientID}</div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function selectPatient(id) {
+            currentPatientId = id;
+            selectedTooth = null;
+            document.getElementById('noPatient').style.display = 'none';
+            document.getElementById('patientContent').style.display = 'block';
+            document.getElementById('sidebar').classList.remove('active');
+            renderTeeth();
+            renderPatients();
+        }
+
+        function deletePatient() {
+            if (!confirm('¿Eliminar este paciente?')) return;
+            patients = patients.filter(p => p.id !== currentPatientId);
+            localStorage.setItem('patients', JSON.stringify(patients));
+            currentPatientId = null;
+            selectedTooth = null;
+            document.getElementById('patientContent').style.display = 'none';
+            document.getElementById('noPatient').style.display = 'block';
+            renderPatients();
+            showAlert('Paciente eliminado', 'success');
+        }
+
+        // PIEZAS
+        function renderTeeth() {
+            const grid = document.getElementById('teethGrid');
+            grid.innerHTML = '';
+
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            for (let i = 1; i <= 32; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'tooth-btn';
+                btn.textContent = i;
+                btn.type = 'button';
+                btn.onclick = () => selectTooth(i);
+
+                const tooth = patient.teeth[i];
+                if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
+                    btn.classList.add('filled');
+                }
+
+                if (selectedTooth === i) {
+                    btn.classList.add('active');
+                }
+
+                grid.appendChild(btn);
+            }
+        }
+
+        function selectTooth(num) {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            selectedTooth = num;
+            const tooth = patient.teeth[num];
+
+            document.getElementById('selectedToothTitle').textContent = `Pieza ${num}`;
+            document.getElementById('gingivialMargin').value = tooth.gingivialMargin || '';
+            document.getElementById('probeDepth').value = tooth.probeDepth || '';
+            document.getElementById('attachmentLevel').value = tooth.attachmentLevel || '';
+            document.getElementById('plaque').value = tooth.plaque || '';
+            document.getElementById('bleeding').value = tooth.bleeding || '';
+            document.getElementById('furcation').value = tooth.furcation || '';
+            document.getElementById('mobility').value = tooth.mobility || '';
+            document.getElementById('implant').value = tooth.implant || '0';
+
+            document.getElementById('dataSection').style.display = 'block';
+            renderTeeth();
+            updateStats();
+        }
+
+        function saveTooth() {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient || !selectedTooth) return;
+
+            patient.teeth[selectedTooth] = {
+                gingivialMargin: document.getElementById('gingivialMargin').value || '',
+                probeDepth: document.getElementById('probeDepth').value || '',
+                attachmentLevel: document.getElementById('attachmentLevel').value || '',
+                plaque: document.getElementById('plaque').value || '',
+                bleeding: document.getElementById('bleeding').value || '',
+                furcation: document.getElementById('furcation').value || '',
+                mobility: document.getElementById('mobility').value || '',
+                implant: document.getElementById('implant').value || '0'
+            };
+
+            localStorage.setItem('patients', JSON.stringify(patients));
+            renderTeeth();
+            updateStats();
+            showAlert(`Pieza ${selectedTooth} guardada ✓`, 'success');
+        }
+
+        function updateStats() {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            let completed = 0, bleeding = 0, plaque = 0;
+            Object.values(patient.teeth).forEach(tooth => {
+                if (Object.values(tooth).some(v => v !== '' && v !== '0')) completed++;
+                if (tooth.bleeding === '1') bleeding++;
+                if (tooth.plaque === '1') plaque++;
+            });
+
+            document.getElementById('completedTeeth').textContent = `${completed}/32`;
+            document.getElementById('bopPercent').textContent = `${Math.round((bleeding/32)*100)}%`;
+            document.getElementById('piPercent').textContent = `${Math.round((plaque/32)*100)}%`;
+        }
+
+        // MODOS
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('voiceMode').style.display = 'none';
+            document.getElementById('textMode').style.display = 'none';
+            document.getElementById('formMode').style.display = 'none';
+
+            if (mode === 'voice') {
+                document.getElementById('voiceMode').style.display = 'block';
+            } else if (mode === 'text') {
+                document.getElementById('textMode').style.display = 'block';
+            } else {
+                document.getElementById('formMode').style.display = 'block';
+                renderFormMode();
+            }
+        }
+
+        function renderFormMode() {
+            const form = document.getElementById('formMode');
+            form.innerHTML = `
+                <div class="data-grid">
+                    <div class="form-group">
+                        <label>Pieza</label>
+                        <input type="number" id="fToothNumber" min="1" max="32">
+                    </div>
+                    <div class="form-group">
+                        <label>Margen</label>
+                        <input type="number" id="fGingivial" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Prof.</label>
+                        <input type="number" id="fProbe" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Inserc.</label>
+                        <input type="number" id="fAttach" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Sangrado</label>
+                        <select id="fBleeding"><option value="">-</option><option value="0">No</option><option value="1">Sí</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Placa</label>
+                        <select id="fPlaque"><option value="">-</option><option value="0">No</option><option value="1">Sí</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Furcación</label>
+                        <input type="number" id="fFurc" min="0" max="3">
+                    </div>
+                    <div class="form-group">
+                        <label>Movilidad</label>
+                        <input type="number" id="fMobil" min="0" max="3">
+                    </div>
+                </div>
+                <button class="btn-success" onclick="processFormData()">Guardar</button>
+            `;
+        }
+
+        function processFormData() {
+            const toothNum = document.getElementById('fToothNumber').value;
+            if (!toothNum) {
+                showAlert('Selecciona una pieza', 'error');
+                return;
+            }
+
+            const data = {
+                toothNumber: parseInt(toothNum),
+                gingivialMargin: document.getElementById('fGingivial').value,
+                probeDepth: document.getElementById('fProbe').value,
+                attachmentLevel: document.getElementById('fAttach').value,
+                plaque: document.getElementById('fPlaque').value,
+                bleeding: document.getElementById('fBleeding').value,
+                furcation: document.getElementById('fFurc').value,
+                mobility: document.getElementById('fMobil').value
+            };
+
+            saveData(data);
+        }
+
+        function initVoice() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                showAlert('Tu navegador no soporta voz', 'error');
+                return false;
+            }
+
+            voiceRec = new SR();
+            voiceRec.lang = 'es-ES';
+            voiceRec.continuous = true;  // CAMBIO: Permitir múltiples resultados
+            voiceRec.interimResults = true;
+            voiceRec.maxAlternatives = 1;
+
+            voiceRec.onstart = () => {
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                document.getElementById('voiceStatus').textContent = '🔴 Escuchando...';
+                document.getElementById('voiceTranscript').textContent = '';
+                document.getElementById('voiceTranscript').style.display = 'block';
+                console.log('Voz iniciada');
+            };
+
+            voiceRec.onresult = (e) => {
+                console.log('Resultado voz:', e);
+                let interim = '';
+                let final = '';
+
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    const transcript = e.results[i][0].transcript;
+                    console.log('Transcripción:', transcript, 'Final:', e.results[i].isFinal);
+                    
+                    if (e.results[i].isFinal) {
+                        final += transcript + ' ';
+                    } else {
+                        interim += transcript;
+                    }
+                }
+
+                const display = final || interim;
+                document.getElementById('voiceTranscript').textContent = display;
+                console.log('Mostrando:', display);
+
+                if (final.trim()) {
+                    console.log('Procesando comando final:', final);
+                    processVoice(final.trim());
+                }
+            };
+
+            voiceRec.onerror = (e) => {
+                console.error('Error voz:', e.error);
+                // No mostrar error si es "no-speech", solo reintentar
+                if (e.error !== 'no-speech') {
+                    document.getElementById('voiceStatus').textContent = '❌ Error: ' + e.error;
+                }
+            };
+
+            voiceRec.onend = () => {
+                console.log('Voz finalizada, reiniciando...');
+                // Reiniciar automáticamente si sigue escuchando
+                if (isListening) {
+                    try {
+                        voiceRec.start();
+                    } catch (err) {
+                        console.log('No se puede reiniciar:', err);
+                    }
+                }
+            };
+
+            return true;
+        }
+
+        function toggleVoice() {
+            console.log('Toggle voz, isListening:', isListening);
+            if (!voiceRec && !initVoice()) return;
+            
+            try {
+                if (isListening) {
+                    console.log('Deteniendo voz');
+                    isListening = false;
+                    voiceRec.stop();
+                    document.getElementById('micButton').classList.remove('listening');
+                    document.getElementById('voiceStatus').textContent = 'Presiona para hablar';
+                } else {
+                    console.log('Iniciando voz');
+                    document.getElementById('voiceTranscript').textContent = '';
+                    document.getElementById('voiceStatus').textContent = '⏳ Cargando...';
+                    voiceRec.start();
+                }
+            } catch (err) {
+                console.error('Error toggle voz:', err);
+                showAlert('Error: ' + err.message, 'error');
+            }
+        }
+
+        function processVoice(text) {
+            console.log('Procesando voz:', text);
+            const data = parseVoice(text);
+            console.log('Datos parseados:', data);
+            if (data && data.toothNumber) {
+                saveData(data);
+            } else {
+                showAlert('No entendí. Di: "Pieza 18, profundidad 3"', 'error');
+            }
+        }
+
+        function parseVoice(text) {
+            console.log('Parseando:', text);
+            const lower = text.toLowerCase();
+            
+            // Buscar número de pieza (1-32)
+            const toothMatch = text.match(/\b([1-9]|[1-2]\d|3[0-2])\b/);
+            if (!toothMatch) {
+                console.log('No encontré número de pieza');
+                return null;
+            }
+            
+            const tooth = parseInt(toothMatch[1]);
+            console.log('Pieza encontrada:', tooth);
+
+            const result = {
+                toothNumber: tooth,
+                gingivialMargin: '',
+                probeDepth: '',
+                attachmentLevel: '',
+                plaque: '',
+                bleeding: '',
+                furcation: '',
+                mobility: ''
+            };
+
+            // Margen gingival
+            let m = lower.match(/margen\s*[:=]?\s*([0-9.,]+)|gingival\s*[:=]?\s*([0-9.,]+)/);
+            if (m) result.gingivialMargin = parseFloat((m[1] || m[2]).replace(',', '.'));
+
+            // Profundidad
+            m = lower.match(/profundidad\s*[:=]?\s*([0-9.,]+)|prof\s*[:=]?\s*([0-9.,]+)|sondaje\s*[:=]?\s*([0-9.,]+)/);
+            if (m) result.probeDepth = parseFloat((m[1] || m[2] || m[3]).replace(',', '.'));
+
+            // Inserción
+            m = lower.match(/inserción\s*[:=]?\s*([0-9.,]+)|inserc\s*[:=]?\s*([0-9.,]+)|nivel\s*[:=]?\s*([0-9.,]+)/);
+            if (m) result.attachmentLevel = parseFloat((m[1] || m[2] || m[3]).replace(',', '.'));
+
+            // Sangrado
+            m = lower.match(/sangrado\s*[:=]?\s*(sí|si|yes|no|no)/i);
+            if (m) result.bleeding = /sí|si|yes/i.test(m[1]) ? '1' : '0';
+
+            // Placa
+            m = lower.match(/placa\s*[:=]?\s*(sí|si|yes|no)/i);
+            if (m) result.plaque = /sí|si|yes/i.test(m[1]) ? '1' : '0';
+
+            // Furcación
+            m = lower.match(/furcación\s*[:=]?\s*([0-3])|furc\s*[:=]?\s*([0-3])/);
+            if (m) result.furcation = m[1] || m[2];
+
+            // Movilidad
+            m = lower.match(/movilidad\s*[:=]?\s*([0-3])|movil\s*[:=]?\s*([0-3])/);
+            if (m) result.mobility = m[1] || m[2];
+
+            console.log('Resultado parseado:', result);
+            return result;
+        }
+
+        function processText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                showAlert('Escribe algo', 'error');
+                return;
+            }
+            const data = parseVoice(text);
+            if (data) saveData(data);
+            else showAlert('Formato: "Pieza 18, profundidad 3..."', 'error');
+        }
+
+        function saveData(data) {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            const toothNum = data.toothNumber;
+            const existingTooth = patient.teeth[toothNum];
+
+            // CAMBIO: Actualizar solo los campos que vienen con datos
+            // No borrar los campos que ya existen
+            if (data.gingivialMargin !== '') {
+                existingTooth.gingivialMargin = data.gingivialMargin;
+            }
+            if (data.probeDepth !== '') {
+                existingTooth.probeDepth = data.probeDepth;
+            }
+            if (data.attachmentLevel !== '') {
+                existingTooth.attachmentLevel = data.attachmentLevel;
+            }
+            if (data.plaque !== '') {
+                existingTooth.plaque = data.plaque;
+            }
+            if (data.bleeding !== '') {
+                existingTooth.bleeding = data.bleeding;
+            }
+            if (data.furcation !== '') {
+                existingTooth.furcation = data.furcation;
+            }
+            if (data.mobility !== '') {
+                existingTooth.mobility = data.mobility;
+            }
+
+            localStorage.setItem('patients', JSON.stringify(patients));
+            selectTooth(toothNum);
+            showAlert(`Pieza ${toothNum} actualizada ✓`, 'success');
+        }
+
+        // EXPORTAR
+        function exportExcel() {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) {
+                showAlert('Selecciona paciente', 'error');
+                return;
+            }
+
+            console.log('Exportando Excel...');
+
+            try {
+                // Crear datos
+                const data = [];
+                
+                // Encabezado
+                data.push(['PERIODONTOGRAMA']);
+                data.push(['Paciente', patient.name + ' ' + patient.lastName]);
+                data.push(['ID', patient.patientID]);
+                data.push(['Fecha Nacimiento', patient.birthdate || '']);
+                data.push(['Fecha Examen', new Date().toLocaleDateString('es-ES')]);
+                data.push([]);
+                
+                // Headers de tabla
+                data.push(['Pieza', 'Margen (mm)', 'Prof. Sondaje (mm)', 'Nivel Inserción (mm)', 'Sangrado', 'Placa', 'Furcación', 'Movilidad']);
+                
+                // Datos de piezas
+                Object.entries(patient.teeth).forEach(([num, tooth]) => {
+                    if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
+                        data.push([
+                            parseInt(num),
+                            tooth.gingivialMargin || '',
+                            tooth.probeDepth || '',
+                            tooth.attachmentLevel || '',
+                            tooth.bleeding === '1' ? 'Sí' : (tooth.bleeding === '0' ? 'No' : ''),
+                            tooth.plaque === '1' ? 'Sí' : (tooth.plaque === '0' ? 'No' : ''),
+                            tooth.furcation || '',
+                            tooth.mobility || ''
+                        ]);
+                    }
+                });
+
+                // Estadísticas
+                let completed = 0, bleeding = 0, plaque = 0;
+                Object.values(patient.teeth).forEach(tooth => {
+                    if (Object.values(tooth).some(v => v !== '' && v !== '0')) completed++;
+                    if (tooth.bleeding === '1') bleeding++;
+                    if (tooth.plaque === '1') plaque++;
+                });
+
+                data.push([]);
+                data.push(['ESTADÍSTICAS']);
+                data.push(['Piezas completadas', completed + '/32']);
+                data.push(['Sangrado (BOP)', Math.round((bleeding/32)*100) + '%']);
+                data.push(['Placa (PI)', Math.round((plaque/32)*100) + '%']);
+
+                console.log('Datos para Excel:', data);
+
+                // Crear workbook con XLSX
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                
+                // Ajustar anchos de columnas
+                ws['!cols'] = [
+                    {wch: 8},
+                    {wch: 12},
+                    {wch: 14},
+                    {wch: 14},
+                    {wch: 10},
+                    {wch: 10},
+                    {wch: 10},
+                    {wch: 10}
+                ];
+                
+                // Aplicar estilos básicos
+                ws['!autofilter'] = { ref: 'A7:H7' }; // Auto-filtro en headers
+                
+                // Crear libro
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Periodontograma');
+                
+                // Descargar con nombre específico
+                const filename = `Periodontograma_${patient.patientID}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                console.log('Descargando:', filename);
+                
+                // Usar writeFileXLSX para mejor compatibilidad
+                if (XLSX.writeFileXLSX) {
+                    XLSX.writeFileXLSX(wb, filename);
+                } else {
+                    XLSX.writeFile(wb, filename);
+                }
+                
+                showAlert('Excel descargado ✓', 'success');
+            } catch (err) {
+                console.error('Error Excel:', err);
+                showAlert('Error Excel: ' + err.message, 'error');
+            }
+        }
+
+        function exportCSV() {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            let csv = 'PERIODONTOGRAMA\nPaciente,' + patient.name + ' ' + patient.lastName + '\nID,' + patient.patientID + '\n\nPieza,Margen,Prof,Inserc,Sangrado,Placa,Furcación,Movilidad\n';
+
+            Object.entries(patient.teeth).forEach(([num, tooth]) => {
+                if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
+                    csv += num + ',' + tooth.gingivialMargin + ',' + tooth.probeDepth + ',' + tooth.attachmentLevel + ',' +
+                        (tooth.bleeding === '1' ? 'Sí' : 'No') + ',' + (tooth.plaque === '1' ? 'Sí' : 'No') + ',' +
+                        tooth.furcation + ',' + tooth.mobility + '\n';
+                }
+            });
+
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Periodontograma_${patient.patientID}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showAlert('CSV descargado ✓', 'success');
+        }
+
+        function printPatient() {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            let html = `<div style="padding: 20px; font-family: Arial;"><h1 style="color: #0066cc; text-align: center;">PERIODONTOGRAMA</h1>
+                <p><strong>Paciente:</strong> ${patient.name} ${patient.lastName}</p>
+                <p><strong>ID:</strong> ${patient.patientID}</p>
+                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead><tr style="background: #0066cc; color: white;">
+                <th style="border: 1px solid #000; padding: 8px;">Pieza</th>
+                <th style="border: 1px solid #000; padding: 8px;">Margen</th>
+                <th style="border: 1px solid #000; padding: 8px;">Prof.</th>
+                <th style="border: 1px solid #000; padding: 8px;">Inserc.</th>
+                <th style="border: 1px solid #000; padding: 8px;">Sangrado</th>
+                <th style="border: 1px solid #000; padding: 8px;">Placa</th>
+                <th style="border: 1px solid #000; padding: 8px;">Furcación</th>
+                <th style="border: 1px solid #000; padding: 8px;">Movilidad</th></tr></thead><tbody>`;
+
+            Object.entries(patient.teeth).forEach(([num, tooth]) => {
+                if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
+                    html += `<tr style="background: #f5f5f5;">
+                        <td style="border: 1px solid #000; padding: 8px;"><strong>${num}</strong></td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.gingivialMargin || '-'}</td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.probeDepth || '-'}</td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.attachmentLevel || '-'}</td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.bleeding === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.plaque === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.furcation || '-'}</td>
+                        <td style="border: 1px solid #000; padding: 8px;">${tooth.mobility || '-'}</td></tr>`;
+                }
+            });
+
+            html += '</tbody></table></div>';
+
+            const elem = document.createElement('div');
+            elem.innerHTML = html;
+
+            const opt = {
+                margin: 10,
+                filename: `Periodontograma_${patient.patientID}.pdf`,
+                image: {type: 'jpeg', quality: 0.98},
+                html2canvas: {scale: 2, backgroundColor: '#fff'},
+                jsPDF: {orientation: 'landscape', unit: 'mm', format: 'a4'}
+            };
+
+            html2pdf().set(opt).from(elem).save();
+            showAlert('Imprimiendo ✓', 'success');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPatients();
+        });
+    </script>
+
+    <div id="installPrompt" class="install-prompt">
+        <h3>📱 Instalar PerioDental</h3>
+        <p>Usa como app nativa</p>
+        <div class="install-prompt-buttons">
+            <button class="btn-secondary" onclick="document.getElementById('installPrompt').classList.remove('show')">Luego</button>
+            <button class="btn-primary" style="margin: 0;">Instalar</button>
+        </div>
+    </div>
+</body>
+</html>
