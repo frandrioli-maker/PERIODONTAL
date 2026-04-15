@@ -1,8 +1,7 @@
 const CACHE_NAME = 'periodental-v1';
 const urlsToCache = [
-  '/periodontograma-pwa.html',
-  '/manifest.json',
-  '/'
+  './',
+  './manifest.json'
 ];
 
 // Instalación del Service Worker
