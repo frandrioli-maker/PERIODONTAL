@@ -10,19 +10,17 @@
     <meta name="apple-mobile-web-app-title" content="PerioDental">
     
     <title>PerioDental</title>
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #0066cc;
             --primary-dark: #0052a3;
-            --accent: #ff6b35;
             --success: #00b894;
             --danger: #d63031;
             --gray-light: #f5f6fa;
@@ -31,7 +29,7 @@
         }
         html, body { height: 100%; width: 100%; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: var(--gray-dark);
             padding-top: max(0px, env(safe-area-inset-top));
@@ -66,7 +64,7 @@
         .section-title { font-size: 0.95em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
         .form-group { margin-bottom: 10px; }
         label { display: block; margin-bottom: 4px; font-size: 0.8em; font-weight: 600; }
-        input[type="text"], input[type="date"], input[type="number"], select, textarea {
+        input[type="text"], input[type="date"], input[type="number"], select {
             width: 100%;
             padding: 8px;
             border: 1px solid var(--gray-medium);
@@ -74,7 +72,7 @@
             font-size: 0.9em;
             font-family: inherit;
         }
-        input:focus, select:focus, textarea:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
@@ -86,7 +84,6 @@
             font-size: 0.85em;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -94,28 +91,10 @@
             font-family: inherit;
         }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; width: 100%; }
-        .btn-primary:active { transform: scale(0.98); }
         .btn-success { background: linear-gradient(135deg, var(--success) 0%, #00a874 100%); color: white; width: 100%; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%); color: white; width: 100%; margin-top: 8px; font-size: 0.8em; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%); color: white; width: 100%; margin-top: 8px; }
         .btn-secondary { background: white; color: var(--primary); border: 2px solid var(--primary); width: 100%; }
-        .mode-btn {
-            flex: 1;
-            padding: 6px 8px;
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--gray-medium);
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.75em;
-        }
-        .mode-btn.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border-color: var(--primary);
-        }
-        .mode-buttons { display: flex; gap: 6px; margin-bottom: 12px; }
-        .teeth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        .teeth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .tooth-btn {
             padding: 6px;
             background: var(--gray-light);
@@ -125,88 +104,56 @@
             cursor: pointer;
             font-size: 0.8em;
         }
-        .tooth-btn.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border-color: var(--primary);
-        }
+        .tooth-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         .tooth-btn.filled { background: rgba(0, 184, 148, 0.15); border-color: var(--success); }
         .data-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
         @media (max-width: 768px) { .data-grid { grid-template-columns: 1fr; } }
         .patient-item {
-            padding: 8px;
+            padding: 10px;
             background: white;
             border: 1px solid var(--gray-medium);
             border-radius: 6px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 0.85em;
         }
         .patient-item.active { background: rgba(0, 102, 204, 0.1); border: 2px solid var(--primary); }
         .patient-name { font-weight: 600; color: var(--primary); }
-        .patient-id { font-size: 0.7em; color: #95a5a6; margin-top: 2px; }
+        .patient-dni { font-size: 0.75em; color: #95a5a6; margin-top: 3px; }
         .alert { padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8em; display: none; }
         .alert.show { display: block; }
         .alert-success { background: #e8f5e9; border-left: 4px solid var(--success); color: #1b5e20; }
         .alert-error { background: #ffebee; border-left: 4px solid var(--danger); color: #b71c1c; }
-        .stats { background: var(--gray-light); padding: 8px; border-radius: 6px; font-size: 0.75em; margin-bottom: 10px; }
-        .stat-row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .stats { background: var(--gray-light); padding: 10px; border-radius: 6px; font-size: 0.8em; margin-bottom: 10px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 5px 0; }
         .stat-label { font-weight: 600; }
         .stat-value { color: var(--primary); font-weight: 700; }
-        .mic-button {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            font-size: 1.8em;
-            cursor: pointer;
-            margin: 0 auto 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
-        }
-        .mic-button.listening {
-            background: linear-gradient(135deg, var(--accent) 0%, #ff5722 100%);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 4px rgba(255, 107, 53, 0.2);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 4px rgba(255, 107, 53, 0.2); }
-            50% { box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 8px rgba(255, 107, 53, 0.1); }
-        }
-        .voice-box { text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px; }
-        .voice-status { font-size: 0.8em; color: #95a5a6; margin-bottom: 8px; }
-        .voice-transcript { background: white; padding: 8px; border-radius: 6px; min-height: 30px; display: none; word-wrap: break-word; font-size: 0.85em; margin-bottom: 8px; }
-        .menu-toggle { display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; font-size: 1.3em; z-index: 99; }
-        @media (max-width: 768px) { .menu-toggle { display: flex; align-items: center; justify-content: center; } }
-        .install-prompt { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; }
-        .install-prompt.show { display: block; }
-        .install-prompt h3 { color: var(--primary); margin-bottom: 8px; font-size: 0.9em; }
-        .install-prompt p { color: #95a5a6; font-size: 0.8em; margin-bottom: 8px; }
-        .install-prompt-buttons { display: flex; gap: 8px; }
-        .install-prompt-buttons button { flex: 1; margin: 0; padding: 6px; font-size: 0.8em; }
+        .empty-state { text-align: center; padding: 30px; color: #95a5a6; }
+        .empty-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .cuadrante-title { font-size: 0.9em; font-weight: 700; color: white; background: var(--primary); padding: 8px; margin: 10px 0 8px 0; border-radius: 4px; }
+        .three-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .three-inputs input { padding: 6px; font-size: 0.8em; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🦷 PerioDental</h1>
-            <p>Sistema de Periodontograma - Sin Conexión</p>
+            <p>Sistema de Periodontograma - FDI</p>
         </div>
 
         <div class="main">
             <div class="sidebar" id="sidebar">
-                <div class="sidebar-title">👥 Pacientes</div>
+                <div class="sidebar-title">👥 PACIENTES</div>
+
                 <div class="form-group">
                     <input type="text" id="patientName" placeholder="Nombre" style="margin-bottom: 6px;">
-                    <input type="text" id="patientLastName" placeholder="Apellidos" style="margin-bottom: 6px;">
+                    <input type="text" id="patientLastName" placeholder="Apellido" style="margin-bottom: 6px;">
                     <input type="date" id="patientBirthdate" style="margin-bottom: 6px;">
-                    <input type="text" id="patientID" placeholder="ID (P-001)" style="margin-bottom: 6px;">
+                    <input type="text" id="patientDNI" placeholder="DNI" style="margin-bottom: 6px;">
                     <button class="btn-primary" onclick="addPatient()">➕ Nuevo</button>
                 </div>
+
                 <div id="patientsList" style="max-height: 250px; overflow-y: auto;"></div>
 
                 <div class="sidebar-title" style="margin-top: 15px;">💾 BASE DE DATOS</div>
@@ -218,56 +165,97 @@
             </div>
 
             <div class="content">
-                <div id="noPatient" style="text-align: center; padding: 30px;">
-                    <div style="font-size: 2.5em; margin-bottom: 10px;">👤</div>
-                    <p style="color: #95a5a6;">Crea un paciente para comenzar</p>
+                <div id="noPatient" class="empty-state">
+                    <div class="empty-icon">👤</div>
+                    <p>Crea un paciente para comenzar</p>
                 </div>
 
                 <div id="patientContent" style="display: none;">
                     <div class="section">
-                        <div class="section-title">🦷 Piezas (1-32)</div>
-                        <div class="teeth-grid" id="teethGrid"></div>
-                    </div>
+                        <div class="section-title">🦷 PIEZAS FDI</div>
+                        
+                        <div>
+                            <div class="cuadrante-title">Cuadrante 1 - Superior Izquierdo (11-18)</div>
+                            <div class="teeth-grid">
+                                <button class="tooth-btn" onclick="selectTooth(18)">18</button>
+                                <button class="tooth-btn" onclick="selectTooth(17)">17</button>
+                                <button class="tooth-btn" onclick="selectTooth(16)">16</button>
+                                <button class="tooth-btn" onclick="selectTooth(15)">15</button>
+                                <button class="tooth-btn" onclick="selectTooth(14)">14</button>
+                                <button class="tooth-btn" onclick="selectTooth(13)">13</button>
+                                <button class="tooth-btn" onclick="selectTooth(12)">12</button>
+                                <button class="tooth-btn" onclick="selectTooth(11)">11</button>
+                            </div>
 
-                    <div class="section">
-                        <div class="section-title">📝 Entrada</div>
-                        <div class="mode-buttons">
-                            <button class="mode-btn active" onclick="switchMode('voice')">🎤</button>
-                            <button class="mode-btn" onclick="switchMode('text')">⌨️</button>
-                            <button class="mode-btn" onclick="switchMode('form')">📋</button>
+                            <div class="cuadrante-title">Cuadrante 2 - Superior Derecho (21-28)</div>
+                            <div class="teeth-grid">
+                                <button class="tooth-btn" onclick="selectTooth(21)">21</button>
+                                <button class="tooth-btn" onclick="selectTooth(22)">22</button>
+                                <button class="tooth-btn" onclick="selectTooth(23)">23</button>
+                                <button class="tooth-btn" onclick="selectTooth(24)">24</button>
+                                <button class="tooth-btn" onclick="selectTooth(25)">25</button>
+                                <button class="tooth-btn" onclick="selectTooth(26)">26</button>
+                                <button class="tooth-btn" onclick="selectTooth(27)">27</button>
+                                <button class="tooth-btn" onclick="selectTooth(28)">28</button>
+                            </div>
+
+                            <div class="cuadrante-title">Cuadrante 3 - Inferior Derecho (31-38)</div>
+                            <div class="teeth-grid">
+                                <button class="tooth-btn" onclick="selectTooth(31)">31</button>
+                                <button class="tooth-btn" onclick="selectTooth(32)">32</button>
+                                <button class="tooth-btn" onclick="selectTooth(33)">33</button>
+                                <button class="tooth-btn" onclick="selectTooth(34)">34</button>
+                                <button class="tooth-btn" onclick="selectTooth(35)">35</button>
+                                <button class="tooth-btn" onclick="selectTooth(36)">36</button>
+                                <button class="tooth-btn" onclick="selectTooth(37)">37</button>
+                                <button class="tooth-btn" onclick="selectTooth(38)">38</button>
+                            </div>
+
+                            <div class="cuadrante-title">Cuadrante 4 - Inferior Izquierdo (41-48)</div>
+                            <div class="teeth-grid">
+                                <button class="tooth-btn" onclick="selectTooth(48)">48</button>
+                                <button class="tooth-btn" onclick="selectTooth(47)">47</button>
+                                <button class="tooth-btn" onclick="selectTooth(46)">46</button>
+                                <button class="tooth-btn" onclick="selectTooth(45)">45</button>
+                                <button class="tooth-btn" onclick="selectTooth(44)">44</button>
+                                <button class="tooth-btn" onclick="selectTooth(43)">43</button>
+                                <button class="tooth-btn" onclick="selectTooth(42)">42</button>
+                                <button class="tooth-btn" onclick="selectTooth(41)">41</button>
+                            </div>
                         </div>
                     </div>
-
-                    <div id="voiceMode" class="section">
-                        <div class="voice-box">
-                            <button class="mic-button" id="micButton" onclick="toggleVoice()">🎤</button>
-                            <div class="voice-status" id="voiceStatus">Presiona para hablar</div>
-                            <div class="voice-transcript" id="voiceTranscript"></div>
-                        </div>
-                    </div>
-
-                    <div id="textMode" class="section" style="display: none;">
-                        <textarea id="textInput" placeholder="Ej: Pieza 18, prof 3, sangrado sí..."></textarea>
-                        <button class="btn-primary" onclick="processText()" style="margin-top: 8px;">Procesar</button>
-                    </div>
-
-                    <div id="formMode" class="section" style="display: none;"></div>
 
                     <div class="section" id="dataSection" style="display: none;">
                         <div class="section-title" id="selectedToothTitle">Pieza #</div>
+
+                        <div class="form-group">
+                            <label>Margen Gingival (Proximal, Medio, Distal)</label>
+                            <div class="three-inputs">
+                                <input type="number" id="gingivialProximal" placeholder="Prox" step="0.1">
+                                <input type="number" id="gingivialMedio" placeholder="Medio" step="0.1">
+                                <input type="number" id="gingivialDistal" placeholder="Distal" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Profundidad de Sondaje (Proximal, Medio, Distal)</label>
+                            <div class="three-inputs">
+                                <input type="number" id="probeProximal" placeholder="Prox" step="0.1">
+                                <input type="number" id="probeMedio" placeholder="Medio" step="0.1">
+                                <input type="number" id="probeDistal" placeholder="Distal" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nivel de Inserción (Proximal, Medio, Distal)</label>
+                            <div class="three-inputs">
+                                <input type="number" id="attachmentProximal" placeholder="Prox" step="0.1">
+                                <input type="number" id="attachmentMedio" placeholder="Medio" step="0.1">
+                                <input type="number" id="attachmentDistal" placeholder="Distal" step="0.1">
+                            </div>
+                        </div>
+
                         <div class="data-grid">
-                            <div class="form-group">
-                                <label>Margen (mm)</label>
-                                <input type="number" id="gingivialMargin" step="0.5">
-                            </div>
-                            <div class="form-group">
-                                <label>Prof. (mm)</label>
-                                <input type="number" id="probeDepth" step="0.5">
-                            </div>
-                            <div class="form-group">
-                                <label>Inserc. (mm)</label>
-                                <input type="number" id="attachmentLevel" step="0.5">
-                            </div>
                             <div class="form-group">
                                 <label>Sangrado</label>
                                 <select id="bleeding">
@@ -286,21 +274,32 @@
                             </div>
                             <div class="form-group">
                                 <label>Furcación</label>
-                                <input type="number" id="furcation" min="0" max="3">
+                                <select id="furcation">
+                                    <option value="">-</option>
+                                    <option value="I">I</option>
+                                    <option value="II">II</option>
+                                    <option value="III">III</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Movilidad</label>
-                                <input type="number" id="mobility" min="0" max="3">
+                                <select id="mobility">
+                                    <option value="">-</option>
+                                    <option value="0">No</option>
+                                    <option value="1">Sí</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Implante</label>
                                 <select id="implant">
+                                    <option value="">-</option>
                                     <option value="0">No</option>
                                     <option value="1">Sí</option>
                                 </select>
                             </div>
                         </div>
-                        <button class="btn-success" onclick="saveTooth()">✓ Guardar</button>
+
+                        <button class="btn-success" onclick="saveTooth()">✓ Guardar Pieza</button>
 
                         <div class="stats">
                             <div class="stat-row">
@@ -308,18 +307,17 @@
                                 <span class="stat-value" id="completedTeeth">0/32</span>
                             </div>
                             <div class="stat-row">
-                                <span class="stat-label">BOP:</span>
-                                <span class="stat-value" id="bopPercent">0%</span>
+                                <span class="stat-label">Sangrado:</span>
+                                <span class="stat-value" id="bleedPercent">0%</span>
                             </div>
                             <div class="stat-row">
-                                <span class="stat-label">PI:</span>
-                                <span class="stat-value" id="piPercent">0%</span>
+                                <span class="stat-label">Placa:</span>
+                                <span class="stat-value" id="plaquePercent">0%</span>
                             </div>
                         </div>
 
-                        <button class="btn-secondary" onclick="exportExcel()" style="margin-bottom: 6px;">📊 Excel</button>
-                        <button class="btn-secondary" onclick="exportCSV()" style="margin-bottom: 6px;">📄 CSV</button>
                         <button class="btn-secondary" onclick="printPatient()" style="margin-bottom: 6px;">🖨️ Imprimir</button>
+                        <button class="btn-secondary" onclick="exportPatientCSV()" style="margin-bottom: 6px;">📄 Exportar</button>
                         <button class="btn-danger" onclick="deletePatient()">🗑️ Eliminar</button>
                     </div>
                 </div>
@@ -327,31 +325,18 @@
         </div>
     </div>
 
-    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; font-size: 1.3em; z-index: 99;">☰</button>
     <div id="alertSuccess" class="alert alert-success"></div>
     <div id="alertError" class="alert alert-error"></div>
 
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
+            navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
 
         let patients = JSON.parse(localStorage.getItem('patients')) || [];
         let currentPatientId = null;
         let selectedTooth = null;
-        let voiceRec = null;
-        let isListening = false;
-
-        // SERVICE WORKER
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            const installPrompt = document.getElementById('installPrompt');
-            installPrompt.querySelector('button:last-child').onclick = async () => {
-                e.prompt();
-                installPrompt.classList.remove('show');
-            };
-            installPrompt.classList.add('show');
-        });
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -361,7 +346,7 @@
             const el = type === 'success' ? document.getElementById('alertSuccess') : document.getElementById('alertError');
             el.textContent = msg;
             el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 3000);
+            setTimeout(() => el.classList.remove('show'), 2000);
         }
 
         // PACIENTES
@@ -369,33 +354,42 @@
             const name = document.getElementById('patientName').value.trim();
             const lastName = document.getElementById('patientLastName').value.trim();
             const birthdate = document.getElementById('patientBirthdate').value;
-            const patientID = document.getElementById('patientID').value.trim();
+            const dni = document.getElementById('patientDNI').value.trim();
 
-            if (!name || !lastName || !patientID) {
+            if (!name || !lastName || !dni) {
                 showAlert('Completa todos los campos', 'error');
                 return;
             }
 
             const patient = {
                 id: Date.now().toString(),
-                name, lastName, birthdate, patientID,
+                name,
+                lastName,
+                birthdate,
+                dni,
                 teeth: {}
             };
 
-            for (let i = 1; i <= 32; i++) {
-                patient.teeth[i] = {
-                    gingivialMargin: '', probeDepth: '', attachmentLevel: '',
-                    plaque: '', bleeding: '', furcation: '', mobility: '', implant: '0'
-                };
+            for (let i = 11; i <= 48; i++) {
+                const quad = Math.floor(i / 10);
+                if (quad >= 1 && quad <= 4 && i % 10 <= 8) {
+                    patient.teeth[i] = {
+                        gingivialProximal: '', gingivialMedio: '', gingivialDistal: '',
+                        probeProximal: '', probeMedio: '', probeDistal: '',
+                        attachmentProximal: '', attachmentMedio: '', attachmentDistal: '',
+                        plaque: '', bleeding: '', furcation: '', mobility: '', implant: ''
+                    };
+                }
             }
 
             patients.push(patient);
+            patients.sort((a, b) => (a.lastName + a.name).localeCompare(b.lastName + b.name));
             localStorage.setItem('patients', JSON.stringify(patients));
 
             document.getElementById('patientName').value = '';
             document.getElementById('patientLastName').value = '';
             document.getElementById('patientBirthdate').value = '';
-            document.getElementById('patientID').value = '';
+            document.getElementById('patientDNI').value = '';
 
             renderPatients();
             showAlert('Paciente creado ✓', 'success');
@@ -409,7 +403,7 @@
                 const div = document.createElement('div');
                 div.className = `patient-item ${p.id === currentPatientId ? 'active' : ''}`;
                 div.onclick = () => selectPatient(p.id);
-                div.innerHTML = `<div class="patient-name">${p.name} ${p.lastName}</div><div class="patient-id">${p.patientID}</div>`;
+                div.innerHTML = `<div class="patient-name">${p.lastName}, ${p.name}</div><div class="patient-dni">${p.dni}</div>`;
                 list.appendChild(div);
             });
         }
@@ -438,30 +432,17 @@
 
         // PIEZAS
         function renderTeeth() {
-            const grid = document.getElementById('teethGrid');
-            grid.innerHTML = '';
-
             const patient = patients.find(p => p.id === currentPatientId);
             if (!patient) return;
 
-            for (let i = 1; i <= 32; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'tooth-btn';
-                btn.textContent = i;
-                btn.type = 'button';
-                btn.onclick = () => selectTooth(i);
-
-                const tooth = patient.teeth[i];
-                if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
-                    btn.classList.add('filled');
-                }
-
-                if (selectedTooth === i) {
-                    btn.classList.add('active');
-                }
-
-                grid.appendChild(btn);
-            }
+            // Actualizar botones
+            document.querySelectorAll('.tooth-btn').forEach(btn => {
+                btn.classList.remove('active', 'filled');
+                const toothNum = parseInt(btn.textContent);
+                const tooth = patient.teeth[toothNum];
+                if (selectedTooth === toothNum) btn.classList.add('active');
+                if (tooth && Object.values(tooth).some(v => v !== '')) btn.classList.add('filled');
+            });
         }
 
         function selectTooth(num) {
@@ -472,14 +453,20 @@
             const tooth = patient.teeth[num];
 
             document.getElementById('selectedToothTitle').textContent = `Pieza ${num}`;
-            document.getElementById('gingivialMargin').value = tooth.gingivialMargin || '';
-            document.getElementById('probeDepth').value = tooth.probeDepth || '';
-            document.getElementById('attachmentLevel').value = tooth.attachmentLevel || '';
-            document.getElementById('plaque').value = tooth.plaque || '';
+            document.getElementById('gingivialProximal').value = tooth.gingivialProximal || '';
+            document.getElementById('gingivialMedio').value = tooth.gingivialMedio || '';
+            document.getElementById('gingivialDistal').value = tooth.gingivialDistal || '';
+            document.getElementById('probeProximal').value = tooth.probeProximal || '';
+            document.getElementById('probeMedio').value = tooth.probeMedio || '';
+            document.getElementById('probeDistal').value = tooth.probeDistal || '';
+            document.getElementById('attachmentProximal').value = tooth.attachmentProximal || '';
+            document.getElementById('attachmentMedio').value = tooth.attachmentMedio || '';
+            document.getElementById('attachmentDistal').value = tooth.attachmentDistal || '';
             document.getElementById('bleeding').value = tooth.bleeding || '';
+            document.getElementById('plaque').value = tooth.plaque || '';
             document.getElementById('furcation').value = tooth.furcation || '';
             document.getElementById('mobility').value = tooth.mobility || '';
-            document.getElementById('implant').value = tooth.implant || '0';
+            document.getElementById('implant').value = tooth.implant || '';
 
             document.getElementById('dataSection').style.display = 'block';
             renderTeeth();
@@ -491,14 +478,20 @@
             if (!patient || !selectedTooth) return;
 
             patient.teeth[selectedTooth] = {
-                gingivialMargin: document.getElementById('gingivialMargin').value || '',
-                probeDepth: document.getElementById('probeDepth').value || '',
-                attachmentLevel: document.getElementById('attachmentLevel').value || '',
-                plaque: document.getElementById('plaque').value || '',
+                gingivialProximal: document.getElementById('gingivialProximal').value || '',
+                gingivialMedio: document.getElementById('gingivialMedio').value || '',
+                gingivialDistal: document.getElementById('gingivialDistal').value || '',
+                probeProximal: document.getElementById('probeProximal').value || '',
+                probeMedio: document.getElementById('probeMedio').value || '',
+                probeDistal: document.getElementById('probeDistal').value || '',
+                attachmentProximal: document.getElementById('attachmentProximal').value || '',
+                attachmentMedio: document.getElementById('attachmentMedio').value || '',
+                attachmentDistal: document.getElementById('attachmentDistal').value || '',
                 bleeding: document.getElementById('bleeding').value || '',
+                plaque: document.getElementById('plaque').value || '',
                 furcation: document.getElementById('furcation').value || '',
                 mobility: document.getElementById('mobility').value || '',
-                implant: document.getElementById('implant').value || '0'
+                implant: document.getElementById('implant').value || ''
             };
 
             localStorage.setItem('patients', JSON.stringify(patients));
@@ -513,468 +506,74 @@
 
             let completed = 0, bleeding = 0, plaque = 0;
             Object.values(patient.teeth).forEach(tooth => {
-                if (Object.values(tooth).some(v => v !== '' && v !== '0')) completed++;
+                if (Object.values(tooth).some(v => v !== '')) completed++;
                 if (tooth.bleeding === '1') bleeding++;
                 if (tooth.plaque === '1') plaque++;
             });
 
             document.getElementById('completedTeeth').textContent = `${completed}/32`;
-            document.getElementById('bopPercent').textContent = `${Math.round((bleeding/32)*100)}%`;
-            document.getElementById('piPercent').textContent = `${Math.round((plaque/32)*100)}%`;
+            document.getElementById('bleedPercent').textContent = `${Math.round((bleeding/32)*100)}%`;
+            document.getElementById('plaquePercent').textContent = `${Math.round((plaque/32)*100)}%`;
         }
 
-        // MODOS
-        function switchMode(mode) {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('voiceMode').style.display = 'none';
-            document.getElementById('textMode').style.display = 'none';
-            document.getElementById('formMode').style.display = 'none';
-
-            if (mode === 'voice') {
-                document.getElementById('voiceMode').style.display = 'block';
-            } else if (mode === 'text') {
-                document.getElementById('textMode').style.display = 'block';
-            } else {
-                document.getElementById('formMode').style.display = 'block';
-                renderFormMode();
-            }
-        }
-
-        function renderFormMode() {
-            const form = document.getElementById('formMode');
-            form.innerHTML = `
-                <div class="data-grid">
-                    <div class="form-group">
-                        <label>Pieza</label>
-                        <input type="number" id="fToothNumber" min="1" max="32">
-                    </div>
-                    <div class="form-group">
-                        <label>Margen</label>
-                        <input type="number" id="fGingivial" step="0.5">
-                    </div>
-                    <div class="form-group">
-                        <label>Prof.</label>
-                        <input type="number" id="fProbe" step="0.5">
-                    </div>
-                    <div class="form-group">
-                        <label>Inserc.</label>
-                        <input type="number" id="fAttach" step="0.5">
-                    </div>
-                    <div class="form-group">
-                        <label>Sangrado</label>
-                        <select id="fBleeding"><option value="">-</option><option value="0">No</option><option value="1">Sí</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Placa</label>
-                        <select id="fPlaque"><option value="">-</option><option value="0">No</option><option value="1">Sí</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Furcación</label>
-                        <input type="number" id="fFurc" min="0" max="3">
-                    </div>
-                    <div class="form-group">
-                        <label>Movilidad</label>
-                        <input type="number" id="fMobil" min="0" max="3">
-                    </div>
-                </div>
-                <button class="btn-success" onclick="processFormData()">Guardar</button>
-            `;
-        }
-
-        function processFormData() {
-            const toothNum = document.getElementById('fToothNumber').value;
-            if (!toothNum) {
-                showAlert('Selecciona una pieza', 'error');
-                return;
-            }
-
-            const data = {
-                toothNumber: parseInt(toothNum),
-                gingivialMargin: document.getElementById('fGingivial').value,
-                probeDepth: document.getElementById('fProbe').value,
-                attachmentLevel: document.getElementById('fAttach').value,
-                plaque: document.getElementById('fPlaque').value,
-                bleeding: document.getElementById('fBleeding').value,
-                furcation: document.getElementById('fFurc').value,
-                mobility: document.getElementById('fMobil').value
-            };
-
-            saveData(data);
-        }
-
-        function initVoice() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                showAlert('Tu navegador no soporta voz', 'error');
-                return false;
-            }
-
-            voiceRec = new SR();
-            voiceRec.lang = 'es-ES';
-            voiceRec.continuous = true;  // CAMBIO: Permitir múltiples resultados
-            voiceRec.interimResults = true;
-            voiceRec.maxAlternatives = 1;
-
-            voiceRec.onstart = () => {
-                isListening = true;
-                document.getElementById('micButton').classList.add('listening');
-                document.getElementById('voiceStatus').textContent = '🔴 Escuchando...';
-                document.getElementById('voiceTranscript').textContent = '';
-                document.getElementById('voiceTranscript').style.display = 'block';
-                console.log('Voz iniciada');
-            };
-
-            voiceRec.onresult = (e) => {
-                console.log('Resultado voz:', e);
-                let interim = '';
-                let final = '';
-
-                for (let i = e.resultIndex; i < e.results.length; i++) {
-                    const transcript = e.results[i][0].transcript;
-                    console.log('Transcripción:', transcript, 'Final:', e.results[i].isFinal);
-                    
-                    if (e.results[i].isFinal) {
-                        final += transcript + ' ';
-                    } else {
-                        interim += transcript;
-                    }
-                }
-
-                const display = final || interim;
-                document.getElementById('voiceTranscript').textContent = display;
-                console.log('Mostrando:', display);
-
-                if (final.trim()) {
-                    console.log('Procesando comando final:', final);
-                    processVoice(final.trim());
-                }
-            };
-
-            voiceRec.onerror = (e) => {
-                console.error('Error voz:', e.error);
-                // No mostrar error si es "no-speech", solo reintentar
-                if (e.error !== 'no-speech') {
-                    document.getElementById('voiceStatus').textContent = '❌ Error: ' + e.error;
-                }
-            };
-
-            voiceRec.onend = () => {
-                console.log('Voz finalizada, reiniciando...');
-                // Reiniciar automáticamente si sigue escuchando
-                if (isListening) {
-                    try {
-                        voiceRec.start();
-                    } catch (err) {
-                        console.log('No se puede reiniciar:', err);
-                    }
-                }
-            };
-
-            return true;
-        }
-
-        function toggleVoice() {
-            console.log('Toggle voz, isListening:', isListening);
-            if (!voiceRec && !initVoice()) return;
-            
-            try {
-                if (isListening) {
-                    console.log('Deteniendo voz');
-                    isListening = false;
-                    voiceRec.stop();
-                    document.getElementById('micButton').classList.remove('listening');
-                    document.getElementById('voiceStatus').textContent = 'Presiona para hablar';
-                } else {
-                    console.log('Iniciando voz');
-                    document.getElementById('voiceTranscript').textContent = '';
-                    document.getElementById('voiceStatus').textContent = '⏳ Cargando...';
-                    voiceRec.start();
-                }
-            } catch (err) {
-                console.error('Error toggle voz:', err);
-                showAlert('Error: ' + err.message, 'error');
-            }
-        }
-
-        function processVoice(text) {
-            console.log('Procesando voz:', text);
-            const data = parseVoice(text);
-            console.log('Datos parseados:', data);
-            if (data && data.toothNumber) {
-                saveData(data);
-            } else {
-                showAlert('No entendí. Di: "Pieza 18, profundidad 3"', 'error');
-            }
-        }
-
-        function parseVoice(text) {
-            console.log('Parseando:', text);
-            const lower = text.toLowerCase();
-            
-            // Buscar número de pieza (1-32)
-            const toothMatch = text.match(/\b([1-9]|[1-2]\d|3[0-2])\b/);
-            if (!toothMatch) {
-                console.log('No encontré número de pieza');
-                return null;
-            }
-            
-            const tooth = parseInt(toothMatch[1]);
-            console.log('Pieza encontrada:', tooth);
-
-            const result = {
-                toothNumber: tooth,
-                gingivialMargin: '',
-                probeDepth: '',
-                attachmentLevel: '',
-                plaque: '',
-                bleeding: '',
-                furcation: '',
-                mobility: ''
-            };
-
-            // Margen gingival
-            let m = lower.match(/margen\s*[:=]?\s*([0-9.,]+)|gingival\s*[:=]?\s*([0-9.,]+)/);
-            if (m) result.gingivialMargin = parseFloat((m[1] || m[2]).replace(',', '.'));
-
-            // Profundidad
-            m = lower.match(/profundidad\s*[:=]?\s*([0-9.,]+)|prof\s*[:=]?\s*([0-9.,]+)|sondaje\s*[:=]?\s*([0-9.,]+)/);
-            if (m) result.probeDepth = parseFloat((m[1] || m[2] || m[3]).replace(',', '.'));
-
-            // Inserción
-            m = lower.match(/inserción\s*[:=]?\s*([0-9.,]+)|inserc\s*[:=]?\s*([0-9.,]+)|nivel\s*[:=]?\s*([0-9.,]+)/);
-            if (m) result.attachmentLevel = parseFloat((m[1] || m[2] || m[3]).replace(',', '.'));
-
-            // Sangrado
-            m = lower.match(/sangrado\s*[:=]?\s*(sí|si|yes|no|no)/i);
-            if (m) result.bleeding = /sí|si|yes/i.test(m[1]) ? '1' : '0';
-
-            // Placa
-            m = lower.match(/placa\s*[:=]?\s*(sí|si|yes|no)/i);
-            if (m) result.plaque = /sí|si|yes/i.test(m[1]) ? '1' : '0';
-
-            // Furcación
-            m = lower.match(/furcación\s*[:=]?\s*([0-3])|furc\s*[:=]?\s*([0-3])/);
-            if (m) result.furcation = m[1] || m[2];
-
-            // Movilidad
-            m = lower.match(/movilidad\s*[:=]?\s*([0-3])|movil\s*[:=]?\s*([0-3])/);
-            if (m) result.mobility = m[1] || m[2];
-
-            console.log('Resultado parseado:', result);
-            return result;
-        }
-
-        function processText() {
-            const text = document.getElementById('textInput').value.trim();
-            if (!text) {
-                showAlert('Escribe algo', 'error');
-                return;
-            }
-            const data = parseVoice(text);
-            if (data) saveData(data);
-            else showAlert('Formato: "Pieza 18, profundidad 3..."', 'error');
-        }
-
-        function saveData(data) {
-            const patient = patients.find(p => p.id === currentPatientId);
-            if (!patient) return;
-
-            const toothNum = data.toothNumber;
-            const existingTooth = patient.teeth[toothNum];
-
-            // CAMBIO: Actualizar solo los campos que vienen con datos
-            // No borrar los campos que ya existen
-            if (data.gingivialMargin !== '') {
-                existingTooth.gingivialMargin = data.gingivialMargin;
-            }
-            if (data.probeDepth !== '') {
-                existingTooth.probeDepth = data.probeDepth;
-            }
-            if (data.attachmentLevel !== '') {
-                existingTooth.attachmentLevel = data.attachmentLevel;
-            }
-            if (data.plaque !== '') {
-                existingTooth.plaque = data.plaque;
-            }
-            if (data.bleeding !== '') {
-                existingTooth.bleeding = data.bleeding;
-            }
-            if (data.furcation !== '') {
-                existingTooth.furcation = data.furcation;
-            }
-            if (data.mobility !== '') {
-                existingTooth.mobility = data.mobility;
-            }
-
-            localStorage.setItem('patients', JSON.stringify(patients));
-            selectTooth(toothNum);
-            showAlert(`Pieza ${toothNum} actualizada ✓`, 'success');
-        }
-
-        // EXPORTAR
-        function exportExcel() {
-            const patient = patients.find(p => p.id === currentPatientId);
-            if (!patient) {
-                showAlert('Selecciona paciente', 'error');
-                return;
-            }
-
-            console.log('Exportando Excel...');
-
-            try {
-                // Crear datos
-                const data = [];
-                
-                // Encabezado
-                data.push(['PERIODONTOGRAMA']);
-                data.push(['Paciente', patient.name + ' ' + patient.lastName]);
-                data.push(['ID', patient.patientID]);
-                data.push(['Fecha Nacimiento', patient.birthdate || '']);
-                data.push(['Fecha Examen', new Date().toLocaleDateString('es-ES')]);
-                data.push([]);
-                
-                // Headers de tabla
-                data.push(['Pieza', 'Margen (mm)', 'Prof. Sondaje (mm)', 'Nivel Inserción (mm)', 'Sangrado', 'Placa', 'Furcación', 'Movilidad']);
-                
-                // Datos de piezas
-                Object.entries(patient.teeth).forEach(([num, tooth]) => {
-                    if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
-                        data.push([
-                            parseInt(num),
-                            tooth.gingivialMargin || '',
-                            tooth.probeDepth || '',
-                            tooth.attachmentLevel || '',
-                            tooth.bleeding === '1' ? 'Sí' : (tooth.bleeding === '0' ? 'No' : ''),
-                            tooth.plaque === '1' ? 'Sí' : (tooth.plaque === '0' ? 'No' : ''),
-                            tooth.furcation || '',
-                            tooth.mobility || ''
-                        ]);
-                    }
-                });
-
-                // Estadísticas
-                let completed = 0, bleeding = 0, plaque = 0;
-                Object.values(patient.teeth).forEach(tooth => {
-                    if (Object.values(tooth).some(v => v !== '' && v !== '0')) completed++;
-                    if (tooth.bleeding === '1') bleeding++;
-                    if (tooth.plaque === '1') plaque++;
-                });
-
-                data.push([]);
-                data.push(['ESTADÍSTICAS']);
-                data.push(['Piezas completadas', completed + '/32']);
-                data.push(['Sangrado (BOP)', Math.round((bleeding/32)*100) + '%']);
-                data.push(['Placa (PI)', Math.round((plaque/32)*100) + '%']);
-
-                console.log('Datos para Excel:', data);
-
-                // Crear workbook con XLSX
-                const ws = XLSX.utils.aoa_to_sheet(data);
-                
-                // Ajustar anchos de columnas
-                ws['!cols'] = [
-                    {wch: 8},
-                    {wch: 12},
-                    {wch: 14},
-                    {wch: 14},
-                    {wch: 10},
-                    {wch: 10},
-                    {wch: 10},
-                    {wch: 10}
-                ];
-                
-                // Aplicar estilos básicos
-                ws['!autofilter'] = { ref: 'A7:H7' }; // Auto-filtro en headers
-                
-                // Crear libro
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Periodontograma');
-                
-                // Descargar con nombre específico
-                const filename = `Periodontograma_${patient.patientID}_${new Date().toISOString().split('T')[0]}.xlsx`;
-                console.log('Descargando:', filename);
-                
-                // Usar writeFileXLSX para mejor compatibilidad
-                if (XLSX.writeFileXLSX) {
-                    XLSX.writeFileXLSX(wb, filename);
-                } else {
-                    XLSX.writeFile(wb, filename);
-                }
-                
-                showAlert('Excel descargado ✓', 'success');
-            } catch (err) {
-                console.error('Error Excel:', err);
-                showAlert('Error Excel: ' + err.message, 'error');
-            }
-        }
-
-        function exportCSV() {
-            const patient = patients.find(p => p.id === currentPatientId);
-            if (!patient) return;
-
-            let csv = 'PERIODONTOGRAMA\nPaciente,' + patient.name + ' ' + patient.lastName + '\nID,' + patient.patientID + '\n\nPieza,Margen,Prof,Inserc,Sangrado,Placa,Furcación,Movilidad\n';
-
-            Object.entries(patient.teeth).forEach(([num, tooth]) => {
-                if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
-                    csv += num + ',' + tooth.gingivialMargin + ',' + tooth.probeDepth + ',' + tooth.attachmentLevel + ',' +
-                        (tooth.bleeding === '1' ? 'Sí' : 'No') + ',' + (tooth.plaque === '1' ? 'Sí' : 'No') + ',' +
-                        tooth.furcation + ',' + tooth.mobility + '\n';
-                }
-            });
-
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Periodontograma_${patient.patientID}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showAlert('CSV descargado ✓', 'success');
-        }
-
+        // IMPRIMIR
         function printPatient() {
             const patient = patients.find(p => p.id === currentPatientId);
             if (!patient) return;
 
-            let html = `<div style="padding: 20px; font-family: Arial;"><h1 style="color: #0066cc; text-align: center;">PERIODONTOGRAMA</h1>
-                <p><strong>Paciente:</strong> ${patient.name} ${patient.lastName}</p>
-                <p><strong>ID:</strong> ${patient.patientID}</p>
-                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <thead><tr style="background: #0066cc; color: white;">
-                <th style="border: 1px solid #000; padding: 8px;">Pieza</th>
-                <th style="border: 1px solid #000; padding: 8px;">Margen</th>
-                <th style="border: 1px solid #000; padding: 8px;">Prof.</th>
-                <th style="border: 1px solid #000; padding: 8px;">Inserc.</th>
-                <th style="border: 1px solid #000; padding: 8px;">Sangrado</th>
-                <th style="border: 1px solid #000; padding: 8px;">Placa</th>
-                <th style="border: 1px solid #000; padding: 8px;">Furcación</th>
-                <th style="border: 1px solid #000; padding: 8px;">Movilidad</th></tr></thead><tbody>`;
+            let html = `<div style="padding: 20px; font-family: Arial; font-size: 11px;">
+                <h1 style="color: #0066cc; text-align: center;">PERIODONTOGRAMA</h1>
+                <p><strong>Paciente:</strong> ${patient.lastName}, ${patient.name}</p>
+                <p><strong>DNI:</strong> ${patient.dni}</p>
+                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>`;
 
-            Object.entries(patient.teeth).forEach(([num, tooth]) => {
-                if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
-                    html += `<tr style="background: #f5f5f5;">
-                        <td style="border: 1px solid #000; padding: 8px;"><strong>${num}</strong></td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.gingivialMargin || '-'}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.probeDepth || '-'}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.attachmentLevel || '-'}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.bleeding === '1' ? 'Sí' : '-'}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.plaque === '1' ? 'Sí' : '-'}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.furcation || '-'}</td>
-                        <td style="border: 1px solid #000; padding: 8px;">${tooth.mobility || '-'}</td></tr>`;
-                }
+            // Por cuadrantes
+            const cuadrantes = [
+                { num: 1, nombre: 'Superior Izquierdo', piezas: [18,17,16,15,14,13,12,11] },
+                { num: 2, nombre: 'Superior Derecho', piezas: [21,22,23,24,25,26,27,28] },
+                { num: 3, nombre: 'Inferior Derecho', piezas: [31,32,33,34,35,36,37,38] },
+                { num: 4, nombre: 'Inferior Izquierdo', piezas: [41,42,43,44,45,46,47,48] }
+            ];
+
+            cuadrantes.forEach(quad => {
+                html += `<h3 style="color: white; background: #0066cc; padding: 8px; margin: 10px 0 5px 0;">Cuadrante ${quad.num} - ${quad.nombre}</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead><tr style="background: #0066cc; color: white;">
+                <th style="border: 1px solid #000; padding: 6px;">Pieza</th>
+                <th style="border: 1px solid #000; padding: 6px;">Margen</th>
+                <th style="border: 1px solid #000; padding: 6px;">Prof.</th>
+                <th style="border: 1px solid #000; padding: 6px;">Inserc.</th>
+                <th style="border: 1px solid #000; padding: 6px;">Sang</th>
+                <th style="border: 1px solid #000; padding: 6px;">Placa</th>
+                <th style="border: 1px solid #000; padding: 6px;">Furc.</th>
+                <th style="border: 1px solid #000; padding: 6px;">Movil</th>
+                <th style="border: 1px solid #000; padding: 6px;">Impl.</th>
+                </tr></thead><tbody>`;
+
+                quad.piezas.forEach(num => {
+                    const tooth = patient.teeth[num];
+                    if (tooth && Object.values(tooth).some(v => v !== '')) {
+                        html += `<tr style="background: #f5f5f5;"><td style="border: 1px solid #000; padding: 6px;"><strong>${num}</strong></td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.gingivialProximal||'-'}/${tooth.gingivialMedio||'-'}/${tooth.gingivialDistal||'-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.probeProximal||'-'}/${tooth.probeMedio||'-'}/${tooth.probeDistal||'-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.attachmentProximal||'-'}/${tooth.attachmentMedio||'-'}/${tooth.attachmentDistal||'-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.bleeding === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.plaque === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.furcation || '-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.mobility === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 6px;">${tooth.implant === '1' ? 'Sí' : '-'}</td></tr>`;
+                    }
+                });
+                html += '</tbody></table>';
             });
 
-            html += '</tbody></table></div>';
+            html += '</div>';
 
             const elem = document.createElement('div');
             elem.innerHTML = html;
-
             const opt = {
                 margin: 10,
-                filename: `Periodontograma_${patient.patientID}.pdf`,
+                filename: `Periodontograma_${patient.dni}.pdf`,
                 image: {type: 'jpeg', quality: 0.98},
                 html2canvas: {scale: 2, backgroundColor: '#fff'},
                 jsPDF: {orientation: 'landscape', unit: 'mm', format: 'a4'}
@@ -984,48 +583,78 @@
             showAlert('Imprimiendo ✓', 'success');
         }
 
-        // EXPORTAR TODA LA BASE DE DATOS CSV
+        // EXPORTAR PACIENTE
+        function exportPatientCSV() {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient) return;
+
+            let csv = `PERIODONTOGRAMA\nPaciente,${patient.lastName}, ${patient.name}\nDNI,${patient.dni}\n\nPieza,Margen (P/M/D),Prof (P/M/D),Inserc (P/M/D),Sangrado,Placa,Furcación,Movilidad,Implante\n`;
+
+            const allTeeth = [...Array(32).keys()].map((_, i) => {
+                const quad = Math.floor((i + 11) / 10);
+                const num = (i + 11) % 10 === 0 ? i + 11 + 7 : i + 11;
+                return num;
+            }).filter(n => patient.teeth[n]);
+
+            allTeeth.forEach(num => {
+                const tooth = patient.teeth[num];
+                if (Object.values(tooth).some(v => v !== '')) {
+                    csv += `${num},${tooth.gingivialProximal||''} ${tooth.gingivialMedio||''} ${tooth.gingivialDistal||''},`;
+                    csv += `${tooth.probeProximal||''} ${tooth.probeMedio||''} ${tooth.probeDistal||''},`;
+                    csv += `${tooth.attachmentProximal||''} ${tooth.attachmentMedio||''} ${tooth.attachmentDistal||''},`;
+                    csv += `${tooth.bleeding === '1' ? 'Sí' : 'No'},${tooth.plaque === '1' ? 'Sí' : 'No'},`;
+                    csv += `${tooth.furcation || '-'},${tooth.mobility === '1' ? 'Sí' : 'No'},${tooth.implant === '1' ? 'Sí' : 'No'}\n`;
+                }
+            });
+
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Periodontograma_${patient.dni}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showAlert('Exportado ✓', 'success');
+        }
+
+        // EXPORTAR TODA LA BD
         function exportAllCSV() {
-            if (patients.length === 0) {
-                showAlert('No hay pacientes para exportar', 'error');
+            if (!patients.length) {
+                showAlert('No hay pacientes', 'error');
                 return;
             }
 
-            let csv = 'PERIODONTOGRAMA - EXPORTACIÓN COMPLETA\n';
-            csv += `Fecha de exportación,${new Date().toLocaleDateString('es-ES')} ${new Date().toLocaleTimeString('es-ES')}\n\n`;
+            let csv = 'PERIODONTOGRAMA - EXPORTACIÓN COMPLETA\nFecha,' + new Date().toLocaleDateString('es-ES') + '\n\n';
 
-            patients.forEach((patient, idx) => {
-                csv += `===== PACIENTE ${idx + 1}: ${patient.name} ${patient.lastName} =====\n`;
-                csv += `ID,${patient.patientID}\n`;
-                csv += `Fecha Nacimiento,${patient.birthdate || '-'}\n\n`;
-                csv += `Pieza,Margen (mm),Prof. Sondaje (mm),Nivel Inserción (mm),Sangrado,Placa,Furcación,Movilidad\n`;
+            patients.forEach(patient => {
+                csv += `===== ${patient.lastName}, ${patient.name} (DNI: ${patient.dni}) =====\n`;
+                csv += 'Pieza,Margen (P/M/D),Prof (P/M/D),Inserc (P/M/D),Sangrado,Placa,Furcación,Movilidad,Implante\n';
 
                 Object.entries(patient.teeth).forEach(([num, tooth]) => {
-                    if (Object.values(tooth).some(v => v !== '' && v !== '0')) {
-                        csv += `${num},${tooth.gingivialMargin || ''},${tooth.probeDepth || ''},${tooth.attachmentLevel || ''},`;
-                        csv += `${tooth.bleeding === '1' ? 'Sí' : (tooth.bleeding === '0' ? 'No' : '')},`;
-                        csv += `${tooth.plaque === '1' ? 'Sí' : (tooth.plaque === '0' ? 'No' : '')},`;
-                        csv += `${tooth.furcation || ''},${tooth.mobility || ''}\n`;
+                    if (Object.values(tooth).some(v => v !== '')) {
+                        csv += `${num},${tooth.gingivialProximal||''} ${tooth.gingivialMedio||''} ${tooth.gingivialDistal||''},`;
+                        csv += `${tooth.probeProximal||''} ${tooth.probeMedio||''} ${tooth.probeDistal||''},`;
+                        csv += `${tooth.attachmentProximal||''} ${tooth.attachmentMedio||''} ${tooth.attachmentDistal||''},`;
+                        csv += `${tooth.bleeding === '1' ? 'Sí' : 'No'},${tooth.plaque === '1' ? 'Sí' : 'No'},`;
+                        csv += `${tooth.furcation || '-'},${tooth.mobility === '1' ? 'Sí' : 'No'},${tooth.implant === '1' ? 'Sí' : 'No'}\n`;
                     }
                 });
-
                 csv += '\n';
             });
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
+            const blob = new Blob([csv], {type: 'text/csv'});
             const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `PerioDental_Backup_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showAlert('Base de datos exportada ✓', 'success');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PerioDental_Backup_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showAlert('BD exportada ✓', 'success');
         }
 
-        // IMPORTAR BASE DE DATOS CSV
+        // IMPORTAR CSV
         function importCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1035,92 +664,79 @@
                 try {
                     const csv = e.target.result;
                     const lines = csv.split('\n');
-                    
                     let currentPatient = null;
                     let importCount = 0;
-                    let isHeaderLine = false;
 
-                    for (let i = 2; i < lines.length; i++) {
+                    for (let i = 3; i < lines.length; i++) {
                         const line = lines[i].trim();
-                        
                         if (!line) continue;
 
-                        // Detectar nuevo paciente
-                        if (line.startsWith('===== PACIENTE')) {
-                            // Guardar paciente anterior si existe
-                            if (currentPatient && !patients.find(p => p.patientID === currentPatient.patientID)) {
+                        if (line.startsWith('===== ')) {
+                            if (currentPatient && !patients.find(p => p.dni === currentPatient.dni)) {
                                 patients.push(currentPatient);
                                 importCount++;
                             }
 
-                            // Extraer nombre del paciente
-                            const nameMatch = line.match(/PACIENTE \d+: (.*)/);
-                            if (nameMatch) {
-                                const [firstName, ...lastNameParts] = nameMatch[1].split(' ');
+                            const match = line.match(/===== (.*), (.*) \(DNI: (.*)\)/);
+                            if (match) {
                                 currentPatient = {
                                     id: Date.now().toString() + Math.random(),
-                                    name: firstName,
-                                    lastName: lastNameParts.join(' ') || '',
+                                    lastName: match[1],
+                                    name: match[2],
+                                    dni: match[3],
                                     birthdate: '',
-                                    patientID: '',
                                     teeth: {}
                                 };
-                                
-                                // Inicializar piezas
-                                for (let j = 1; j <= 32; j++) {
-                                    currentPatient.teeth[j] = {
-                                        gingivialMargin: '',
-                                        probeDepth: '',
-                                        attachmentLevel: '',
-                                        plaque: '',
-                                        bleeding: '',
-                                        furcation: '',
-                                        mobility: ''
-                                    };
+                                for (let j = 11; j <= 48; j++) {
+                                    if (Math.floor(j/10) >= 1 && Math.floor(j/10) <= 4 && j % 10 <= 8) {
+                                        currentPatient.teeth[j] = {
+                                            gingivialProximal: '', gingivialMedio: '', gingivialDistal: '',
+                                            probeProximal: '', probeMedio: '', probeDistal: '',
+                                            attachmentProximal: '', attachmentMedio: '', attachmentDistal: '',
+                                            bleeding: '', plaque: '', furcation: '', mobility: '', implant: ''
+                                        };
+                                    }
                                 }
                             }
-                            continue;
-                        }
-
-                        // Procesar líneas de datos
-                        if (currentPatient) {
+                        } else if (currentPatient && !isNaN(parseInt(line.split(',')[0]))) {
                             const parts = line.split(',');
-                            
-                            if (parts[0] === 'ID' && parts[1]) {
-                                currentPatient.patientID = parts[1].trim();
-                            } else if (parts[0] === 'Fecha Nacimiento' && parts[1]) {
-                                currentPatient.birthdate = parts[1].trim();
-                            } else if (!isNaN(parseInt(parts[0])) && parseInt(parts[0]) >= 1 && parseInt(parts[0]) <= 32) {
-                                // Línea de pieza
-                                const toothNum = parseInt(parts[0]);
+                            const toothNum = parseInt(parts[0]);
+                            if (currentPatient.teeth[toothNum]) {
+                                const margin = (parts[1] || '').split('/');
+                                const probe = (parts[2] || '').split('/');
+                                const attach = (parts[3] || '').split('/');
                                 currentPatient.teeth[toothNum] = {
-                                    gingivialMargin: parts[1] || '',
-                                    probeDepth: parts[2] || '',
-                                    attachmentLevel: parts[3] || '',
-                                    bleeding: parts[4] === 'Sí' ? '1' : (parts[4] === 'No' ? '0' : ''),
-                                    plaque: parts[5] === 'Sí' ? '1' : (parts[5] === 'No' ? '0' : ''),
-                                    furcation: parts[6] || '',
-                                    mobility: parts[7] || ''
+                                    gingivialProximal: margin[0]?.trim() || '',
+                                    gingivialMedio: margin[1]?.trim() || '',
+                                    gingivialDistal: margin[2]?.trim() || '',
+                                    probeProximal: probe[0]?.trim() || '',
+                                    probeMedio: probe[1]?.trim() || '',
+                                    probeDistal: probe[2]?.trim() || '',
+                                    attachmentProximal: attach[0]?.trim() || '',
+                                    attachmentMedio: attach[1]?.trim() || '',
+                                    attachmentDistal: attach[2]?.trim() || '',
+                                    bleeding: parts[4]?.trim() === 'Sí' ? '1' : '',
+                                    plaque: parts[5]?.trim() === 'Sí' ? '1' : '',
+                                    furcation: parts[6]?.trim() === '-' ? '' : parts[6]?.trim() || '',
+                                    mobility: parts[7]?.trim() === 'Sí' ? '1' : '',
+                                    implant: parts[8]?.trim() === 'Sí' ? '1' : ''
                                 };
                             }
                         }
                     }
 
-                    // Guardar último paciente
-                    if (currentPatient && !patients.find(p => p.patientID === currentPatient.patientID)) {
+                    if (currentPatient && !patients.find(p => p.dni === currentPatient.dni)) {
                         patients.push(currentPatient);
                         importCount++;
                     }
 
+                    patients.sort((a, b) => (a.lastName + a.name).localeCompare(b.lastName + b.name));
                     localStorage.setItem('patients', JSON.stringify(patients));
                     renderPatients();
-                    showAlert(`Importados ${importCount} pacientes ✓`, 'success');
-                    
-                    // Limpiar input
+                    showAlert(`Importados ${importCount} ✓`, 'success');
                     document.getElementById('csvImportInput').value = '';
                 } catch (err) {
-                    console.error('Error importando:', err);
-                    showAlert('Error al importar CSV', 'error');
+                    showAlert('Error importando', 'error');
                 }
             };
             reader.readAsText(file);
@@ -1131,12 +747,12 @@
         });
     </script>
 
-    <div id="installPrompt" class="install-prompt">
-        <h3>📱 Instalar PerioDental</h3>
-        <p>Usa como app nativa</p>
-        <div class="install-prompt-buttons">
-            <button class="btn-secondary" onclick="document.getElementById('installPrompt').classList.remove('show')">Luego</button>
-            <button class="btn-primary" style="margin: 0;">Instalar</button>
+    <div id="installPrompt" class="install-prompt" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000;">
+        <h3 style="color: var(--primary); margin-bottom: 8px; font-size: 0.9em;">📱 Instalar PerioDental</h3>
+        <p style="color: #95a5a6; font-size: 0.8em; margin-bottom: 8px;">Usa como app nativa</p>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="document.getElementById('installPrompt').style.display='none'" style="flex: 1; margin: 0; padding: 8px; font-size: 0.8em;">Luego</button>
+            <button class="btn-primary" style="flex: 1; margin: 0; padding: 8px; font-size: 0.8em;">Instalar</button>
         </div>
     </div>
 </body>
