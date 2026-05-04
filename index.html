@@ -648,6 +648,8 @@ let selectedTooth = null;
 let voiceRec = null;
 let isListening = false;
 let lastCommand = null;
+let lastVoiceTranscript = '';
+let lastVoiceTime = 0;
 
 // ==================== INICIALIZACION ====================
 if ('serviceWorker' in navigator) {
@@ -692,6 +694,38 @@ function speak(text) {
     utter.lang = 'es-ES';
     utter.rate = 1.1;
     utter.pitch = 1;
+
+    // Pausar reconocimiento durante TTS para evitar feedback loop
+    // (que el microfono capte la voz del propio TTS y la procese)
+    var wasListening = isListening;
+    if (wasListening && voiceRec) {
+        try {
+            voiceRec.abort();
+        } catch(e) {}
+    }
+
+    utter.onend = function() {
+        // Reanudar reconocimiento despues del TTS, con un pequeño delay
+        if (wasListening && voiceRec) {
+            setTimeout(function() {
+                if (isListening) {
+                    try { voiceRec.start(); } catch(e) {}
+                }
+            }, 500);
+        }
+    };
+
+    utter.onerror = function() {
+        // Si falla el TTS, reanudar igualmente
+        if (wasListening && voiceRec) {
+            setTimeout(function() {
+                if (isListening) {
+                    try { voiceRec.start(); } catch(e) {}
+                }
+            }, 500);
+        }
+    };
+
     window.speechSynthesis.speak(utter);
 }
 
@@ -1016,6 +1050,11 @@ function initVoice() {
     };
 
     voiceRec.onresult = function(e) {
+        // Si estamos hablando (TTS activo), ignorar resultados para evitar loop
+        if (window.speechSynthesis && window.speechSynthesis.speaking) {
+            return;
+        }
+
         var final = '';
         var interim = '';
 
@@ -1034,9 +1073,21 @@ function initVoice() {
             display.classList.add('has-text');
         }
         if (final.trim()) {
-            display.textContent = final;
+            var finalTrimmed = final.trim();
+
+            // Deduplicacion: ignorar si es el mismo comando que se acaba de procesar
+            // (evita procesar el mismo transcript dos veces por el continuous mode)
+            var now = Date.now();
+            if (finalTrimmed === lastVoiceTranscript && (now - lastVoiceTime) < 2000) {
+                console.log('Comando duplicado ignorado:', finalTrimmed);
+                return;
+            }
+            lastVoiceTranscript = finalTrimmed;
+            lastVoiceTime = now;
+
+            display.textContent = finalTrimmed;
             display.classList.add('has-text');
-            processVoice(final.trim());
+            processVoice(finalTrimmed);
         }
     };
 
