@@ -1120,14 +1120,23 @@ function parseNumberWord(text) {
     return isNaN(num) ? null : num;
 }
 
+// Normaliza texto: quita tildes y pasa a minusculas
+function normalizeText(text) {
+    return text.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 function processVoice(text) {
     lastCommand = text;
     console.log('Procesando:', text);
 
     var data = parseCommand(text);
+
+    // No mostrar error si no se entendio - solo ignorar silenciosamente
+    // Esto evita el bug del "No entendi" fantasma con reconocimiento parcial
     if (!data) {
-        showAlert('No entendi el comando. Intenta: "Pieza 14, profundidad 3 4 3"', 'error');
-        speak('No entendi. Repite por favor.');
+        console.log('Comando no reconocido (ignorado):', text);
         return;
     }
 
@@ -1151,68 +1160,114 @@ function processText() {
         showAlert('Escribe un comando primero', 'error');
         return;
     }
-    processVoice(text);
+
+    // En modo texto SI mostramos error si no se entiende
+    var data = parseCommand(text);
+    if (!data) {
+        showAlert('No entendi. Intenta: "Pieza 14, profundidad 3 4 3"', 'error');
+        return;
+    }
+
+    lastCommand = text;
+    if (data.toothNumber) {
+        applyData(data);
+    } else if (data.action === 'next') {
+        navigateTooth(1);
+    } else if (data.action === 'prev') {
+        navigateTooth(-1);
+    }
+
     document.getElementById('textInput').value = '';
 }
 
+// Extrae 1-3 numeros de un string. Maneja:
+// - "3 4 3" (separados por espacios)
+// - "343" (pegados, voz suele unirlos) -> separa en digitos
+// - "3-4-3", "3,4,3", "3.5 4 3"
+function extractThreeNumbers(str) {
+    var trimmed = str.trim();
+
+    // Primero: intentar separar por espacios, guiones o comas
+    var parts = trimmed.split(/[\s\-,]+/).filter(function(v) { return v.length > 0; });
+    var nums = parts.map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
+
+    // Caso especial: si tenemos UN SOLO numero pero es entero de exactamente 3 digitos,
+    // probablemente la voz unio "3 4 3" en "343". Separar en digitos.
+    // No separamos numeros de 2 digitos porque "10", "12" son valores validos de un campo
+    if (nums.length === 1 && parts.length === 1) {
+        var single = parts[0];
+        if (/^\d{3}$/.test(single)) {
+            var result = [];
+            for (var i = 0; i < single.length; i++) {
+                result.push(parseInt(single[i]));
+            }
+            return result;
+        }
+    }
+
+    if (nums.length >= 1) return nums.slice(0, 3);
+    return [];
+}
+
 function parseCommand(text) {
-    var lower = text.toLowerCase();
+    // Normalizar texto: quitar tildes para hacer match independiente de acentos
+    var lower = normalizeText(text);
 
     // Comandos de navegacion
-    if (/\b(siguiente|next|proximo)\b/.test(lower)) return { action: 'next' };
+    if (/\b(siguiente|next|proximo|proxima)\b/.test(lower)) return { action: 'next' };
     if (/\b(anterior|prev|previo|atras)\b/.test(lower)) return { action: 'prev' };
     if (/\b(corregir|repetir|otra vez)\b/.test(lower)) return { action: 'correct' };
 
     // Buscar numero de pieza
     var toothNum = null;
 
-    // Formato: "pieza 14", "diente 14", "numero 14", "14"
-    var toothMatch = text.match(/\b(?:pieza|diente|numero|pza)\b[\s:]*(\d+|\w+)/i);
+    // Formato: "pieza 14", "diente 14", "numero 14"
+    var toothMatch = lower.match(/\b(?:pieza|diente|numero|pza)\b[\s:]*(\d+|\w+)/);
     if (toothMatch) {
         toothNum = parseNumberWord(toothMatch[1]);
     }
 
     // Tambien buscar numero suelto al inicio (ej: "14 profundidad...")
     if (!toothNum) {
-        var startMatch = text.match(/^\s*(\d{2})\b/);
+        var startMatch = lower.match(/^\s*(\d{2})\b/);
         if (startMatch) toothNum = parseInt(startMatch[1]);
     }
 
-    if (!toothNum || toothNum < 11 || toothNum > 48 || toothNum % 10 > 8) {
+    if (!toothNum || toothNum < 11 || toothNum > 48 || toothNum % 10 > 8 || toothNum % 10 === 0) {
         return null;
     }
 
     var result = { toothNumber: toothNum };
 
     // PROFUNDIDAD DE SONDAJE
-    var m = lower.match(/(?:profundidad|prof|sondaje)\b[\s:]*([\d\.\s\-,]+)/);
+    var m = lower.match(/(?:profundidad|prof|sondaje|sondas)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:margen|insercion|inser|sangrado|placa|furcacion|movilidad|implante|gingival|retraccion|biofilm)\b|$)/);
     if (m) {
-        var vals = m[1].split(/[\s\-,]+/).map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
-        if (vals.length >= 1) result.probeProximal = vals[0];
-        if (vals.length >= 2) result.probeMedio = vals[1];
-        if (vals.length >= 3) result.probeDistal = vals[2];
+        var nums = extractThreeNumbers(m[1]);
+        if (nums.length >= 1) result.probeProximal = nums[0];
+        if (nums.length >= 2) result.probeMedio = nums[1];
+        if (nums.length >= 3) result.probeDistal = nums[2];
     }
 
-    // MARGEN GINGIVAL
-    m = lower.match(/(?:margen|margenes|retraccion)\b[\s:]*([\d\.\s\-,]+)/);
+    // MARGEN GINGIVAL (incluye sinonimos: gingival, gingivial, retraccion, recesion)
+    m = lower.match(/(?:margen|margenes|gingival|gingivial|retraccion|retracciones|recesion|recesiones)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:profundidad|prof|sondaje|insercion|inser|sangrado|placa|furcacion|movilidad|implante)\b|$)/);
     if (m) {
-        var vals = m[1].split(/[\s\-,]+/).map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
-        if (vals.length >= 1) result.gingivialProximal = vals[0];
-        if (vals.length >= 2) result.gingivialMedio = vals[1];
-        if (vals.length >= 3) result.gingivialDistal = vals[2];
+        var nums = extractThreeNumbers(m[1]);
+        if (nums.length >= 1) result.gingivialProximal = nums[0];
+        if (nums.length >= 2) result.gingivialMedio = nums[1];
+        if (nums.length >= 3) result.gingivialDistal = nums[2];
     }
 
     // NIVEL DE INSERCION
-    m = lower.match(/(?:insercion|inser)\b[\s:]*([\d\.\s\-,]+)/);
+    m = lower.match(/(?:insercion|inser|nivel)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:profundidad|prof|sondaje|margen|gingival|sangrado|placa|furcacion|movilidad|implante)\b|$)/);
     if (m) {
-        var vals = m[1].split(/[\s\-,]+/).map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
-        if (vals.length >= 1) result.attachmentProximal = vals[0];
-        if (vals.length >= 2) result.attachmentMedio = vals[1];
-        if (vals.length >= 3) result.attachmentDistal = vals[2];
+        var nums = extractThreeNumbers(m[1]);
+        if (nums.length >= 1) result.attachmentProximal = nums[0];
+        if (nums.length >= 2) result.attachmentMedio = nums[1];
+        if (nums.length >= 3) result.attachmentDistal = nums[2];
     }
 
-    // SANGRADO
-    m = lower.match(/(?:sangrado|sangra|bop)\b[\s:]*(si|yes|positivo|no|negativo)/);
+    // SANGRADO (sí/si/yes/positivo/no/negativo - tildes ya normalizadas)
+    m = lower.match(/(?:sangrado|sangra|sangrante|bop)\b[\s:]*(si|yes|positivo|no|negativo)/);
     if (m) result.bleeding = /si|yes|positivo/.test(m[1]) ? '1' : '0';
 
     // PLACA
@@ -1220,10 +1275,10 @@ function parseCommand(text) {
     if (m) result.plaque = /si|yes|positivo/.test(m[1]) ? '1' : '0';
 
     // FURCACION
-    m = lower.match(/(?:furcacion|furca)\b[\s:]*(i{1,3}|1|2|3)/i);
+    m = lower.match(/(?:furcacion|furca)\b[\s:]*(iii|ii|i|1|2|3)/);
     if (m) {
-        var val = m[1].toUpperCase();
-        result.furcation = val === '1' ? 'I' : val === '2' ? 'II' : val === '3' ? 'III' : val;
+        var val = m[1];
+        result.furcation = val === '1' ? 'I' : val === '2' ? 'II' : val === '3' ? 'III' : val.toUpperCase();
     }
 
     // MOVILIDAD
