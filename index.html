@@ -865,34 +865,19 @@ function selectTooth(num) {
     if (!patient) return;
 
     selectedTooth = num;
-
-    // 🔥 FIX CLAVE
-    if (!patient.teeth[num]) {
-        patient.teeth[num] = {
-            probeProximal:'', probeMedio:'', probeDistal:'',
-            gingivialProximal:'', gingivialMedio:'', gingivialDistal:'',
-            attachmentProximal:'', attachmentMedio:'', attachmentDistal:'',
-            bleeding:'', plaque:'', furcation:'', mobility:'', implant:''
-        };
-    }
-
     var tooth = patient.teeth[num];
 
-    document.getElementById('selectedToothTitle').textContent =
-        'Pieza ' + num + ' - ' + getToothName(num);
+    document.getElementById('selectedToothTitle').textContent = 'Pieza ' + num + ' - ' + getToothName(num);
 
     document.getElementById('probeProximal').value = tooth.probeProximal || '';
     document.getElementById('probeMedio').value = tooth.probeMedio || '';
     document.getElementById('probeDistal').value = tooth.probeDistal || '';
-
     document.getElementById('gingivialProximal').value = tooth.gingivialProximal || '';
     document.getElementById('gingivialMedio').value = tooth.gingivialMedio || '';
     document.getElementById('gingivialDistal').value = tooth.gingivialDistal || '';
-
     document.getElementById('attachmentProximal').value = tooth.attachmentProximal || '';
     document.getElementById('attachmentMedio').value = tooth.attachmentMedio || '';
     document.getElementById('attachmentDistal').value = tooth.attachmentDistal || '';
-
     document.getElementById('bleeding').value = tooth.bleeding || '';
     document.getElementById('plaque').value = tooth.plaque || '';
     document.getElementById('furcation').value = tooth.furcation || '';
@@ -900,9 +885,12 @@ function selectTooth(num) {
     document.getElementById('implant').value = tooth.implant || '';
 
     document.getElementById('dataSection').style.display = 'block';
-
     renderTeeth();
     updateStats();
+
+    if (window.innerWidth <= 800) {
+        document.getElementById('dataSection').scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 function getToothName(num) {
@@ -1015,32 +1003,62 @@ function initVoice() {
 
     voiceRec = new SR();
     voiceRec.lang = CONFIG.VOICE_LANG;
-
-    // 🔥 FIX CRÍTICO
-    voiceRec.continuous = false;
-    voiceRec.interimResults = false;
+    voiceRec.continuous = true;
+    voiceRec.interimResults = true;
     voiceRec.maxAlternatives = 1;
 
     voiceRec.onstart = function() {
         isListening = true;
         document.getElementById('micButton').classList.add('listening');
-        document.getElementById('voiceStatus').textContent = 'Escuchando...';
+        document.getElementById('voiceStatus').textContent = 'Escuchando... habla ahora';
+        document.getElementById('voiceTranscript').textContent = '';
+        document.getElementById('voiceTranscript').classList.remove('has-text');
     };
 
     voiceRec.onresult = function(e) {
-        var result = e.results[0][0];
+        var final = '';
+        var interim = '';
 
-        if (result.confidence < 0.6) return;
-        if (result.transcript.trim().length < 2) return;
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+            var transcript = e.results[i][0].transcript;
+            if (e.results[i].isFinal) {
+                final += transcript + ' ';
+            } else {
+                interim += transcript;
+            }
+        }
 
-        processVoice(result.transcript);
+        var display = document.getElementById('voiceTranscript');
+        if (interim) {
+            display.textContent = interim;
+            display.classList.add('has-text');
+        }
+        if (final.trim()) {
+            display.textContent = final;
+            display.classList.add('has-text');
+            processVoice(final.trim());
+        }
+    };
+
+    voiceRec.onerror = function(e) {
+        if (e.error === 'not-allowed') {
+            showAlert('Microfono bloqueado. Permite el acceso en la configuracion del navegador.', 'error');
+            stopVoice();
+        } else if (e.error === 'network') {
+            showAlert('Error de red. Verifica tu conexion a internet.', 'error');
+            stopVoice();
+        } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
+            console.error('Voice error:', e.error);
+        }
     };
 
     voiceRec.onend = function() {
         if (isListening) {
             setTimeout(function() {
-                try { voiceRec.start(); } catch(e) {}
-            }, 400);
+                if (isListening) {
+                    try { voiceRec.start(); } catch(err) {}
+                }
+            }, 300);
         }
     };
 
@@ -1101,83 +1119,17 @@ function parseNumberWord(text) {
     var num = parseInt(text);
     return isNaN(num) ? null : num;
 }
-function normalize(text) {
-    return text.toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[.,]/g, "")
-        .trim();
-}
 
 function processVoice(text) {
+    lastCommand = text;
+    console.log('Procesando:', text);
 
-    var input = normalize(text);
-    var words = input.split(" ");
-
-    // 🔹 DETECTAR PIEZA RÁPIDO
-    for (var i = 0; i < words.length; i++) {
-        var n = parseNumberWord(words[i]);
-        if (n && n >= 11 && n <= 48 && n % 10 <= 8) {
-            selectTooth(n);
-            speak("pieza " + n);
-            return;
-        }
-    }
-
-    // 🔹 NAVEGACIÓN
-    if (/siguiente|proximo/.test(input)) {
-        navigateTooth(1);
-        return;
-    }
-    if (/anterior|atras/.test(input)) {
-        navigateTooth(-1);
-        return;
-    }
-
-    // 🔹 NUMEROS FLEXIBLES (343 o 3 4 3)
-    var nums = words.map(parseNumberWord).filter(v => v !== null);
-
-    if (nums.length === 0 && /^\d{3}$/.test(input)) {
-        nums = input.split("").map(Number);
-    }
-
-    if (nums.length) {
-        document.getElementById('probeProximal').value = nums[0] || '';
-        document.getElementById('probeMedio').value = nums[1] || '';
-        document.getElementById('probeDistal').value = nums[2] || '';
-
-        saveTooth(false);
-        if (navigator.vibrate) navigator.vibrate(30);
-
-        speak("ok");
-        setTimeout(() => navigateTooth(1), 600);
-        return;
-    }
-
-    // 🔹 SANGRADO
-    if (/sangr/.test(input)) {
-        document.getElementById('bleeding').value =
-            input.includes("no") ? '0' : '1';
-        saveTooth(false);
-        speak("sangrado");
-        return;
-    }
-
-    // 🔹 PLACA
-    if (/placa|biofilm/.test(input)) {
-        document.getElementById('plaque').value =
-            input.includes("no") ? '0' : '1';
-        saveTooth(false);
-        speak("placa");
-        return;
-    }
-
-    // 🔹 FALLBACK → tu parser original
     var data = parseCommand(text);
-    if (data) {
-        applyData(data);
+    if (!data) {
+        showAlert('No entendi el comando. Intenta: "Pieza 14, profundidad 3 4 3"', 'error');
+        speak('No entendi. Repite por favor.');
+        return;
     }
-}
 
     if (data.toothNumber) {
         applyData(data);
