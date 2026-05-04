@@ -632,7 +632,7 @@
 
     <script>
 
-// ==================== CONFIGURACIÓN ====================
+// ==================== CONFIGURACION ====================
 const CONFIG = {
     TTS_ENABLED: true,
     AUTO_SAVE: true,
@@ -649,20 +649,20 @@ let voiceRec = null;
 let isListening = false;
 let lastCommand = null;
 
-// ==================== INICIALIZACIÓN ====================
+// ==================== INICIALIZACION ====================
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(function() {});
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     renderPatients();
 
     if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-        showAlert('⚠️ Tu navegador no soporta reconocimiento de voz. Usa Chrome o Safari.', 'warning');
+        showAlert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Safari.', 'warning');
     }
 
     if (!window.isSecureContext) {
-        showAlert('⚠️ El micrófono requiere HTTPS o localhost. Sube a GitHub Pages para usar voz.', 'warning');
+        showAlert('El microfono requiere HTTPS o localhost. Sube a GitHub Pages para usar voz.', 'warning');
     }
 });
 
@@ -673,20 +673,22 @@ function toggleSidebar() {
 }
 
 // ==================== ALERTAS Y TTS ====================
-function showAlert(msg, type = 'success') {
-    const types = { success: 'alertSuccess', error: 'alertError', warning: 'alertWarning' };
-    const el = document.getElementById(types[type] || 'alertSuccess');
+function showAlert(msg, type) {
+    type = type || 'success';
+    var types = { success: 'alertSuccess', error: 'alertError', warning: 'alertWarning' };
+    var el = document.getElementById(types[type] || 'alertSuccess');
     el.textContent = msg;
     el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 3000);
+    setTimeout(function() { el.classList.remove('show'); }, 3000);
 }
 
 function speak(text) {
-    if (!document.getElementById('ttsEnabled')?.checked) return;
+    var ttsCheckbox = document.getElementById('ttsEnabled');
+    if (!ttsCheckbox || !ttsCheckbox.checked) return;
     if (!window.speechSynthesis) return;
 
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
+    var utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'es-ES';
     utter.rate = 1.1;
     utter.pitch = 1;
@@ -695,37 +697,42 @@ function speak(text) {
 
 // ==================== PACIENTES ====================
 function addPatient() {
-    const name = document.getElementById('patientName').value.trim();
-    const lastName = document.getElementById('patientLastName').value.trim();
-    const birthdate = document.getElementById('patientBirthdate').value;
-    const dni = document.getElementById('patientDNI').value.trim();
+    var name = document.getElementById('patientName').value.trim();
+    var lastName = document.getElementById('patientLastName').value.trim();
+    var birthdate = document.getElementById('patientBirthdate').value;
+    var dni = document.getElementById('patientDNI').value.trim();
 
     if (!name || !lastName || !dni) {
-        showAlert('❌ Completa nombre, apellido y DNI', 'error');
+        showAlert('Completa nombre, apellido y DNI', 'error');
         return;
     }
 
-    if (patients.find(p => p.dni === dni)) {
-        showAlert('❌ Ya existe un paciente con ese DNI', 'error');
+    if (patients.find(function(p) { return p.dni === dni; })) {
+        showAlert('Ya existe un paciente con ese DNI', 'error');
         return;
     }
 
-    const patient = {
+    var patient = {
         id: Date.now().toString(),
-        name, lastName, birthdate, dni,
+        name: name,
+        lastName: lastName,
+        birthdate: birthdate,
+        dni: dni,
         teeth: {},
         createdAt: new Date().toISOString()
     };
 
-    [1, 2, 3, 4].forEach(quad => {
-        for (let i = 1; i <= 8; i++) {
-            const num = quad * 10 + i;
+    [1, 2, 3, 4].forEach(function(quad) {
+        for (var i = 1; i <= 8; i++) {
+            var num = quad * 10 + i;
             patient.teeth[num] = createEmptyTooth();
         }
     });
 
     patients.push(patient);
-    patients.sort((a, b) => (a.lastName + a.name).localeCompare(b.lastName + b.name));
+    patients.sort(function(a, b) {
+        return (a.lastName + a.name).localeCompare(b.lastName + b.name);
+    });
     savePatients();
 
     document.getElementById('patientName').value = '';
@@ -735,8 +742,8 @@ function addPatient() {
 
     renderPatients();
     selectPatient(patient.id);
-    showAlert('✅ Paciente creado exitosamente');
-    speak(`Paciente ${name} ${lastName} creado`);
+    showAlert('Paciente creado exitosamente');
+    speak('Paciente ' + name + ' ' + lastName + ' creado');
 }
 
 function createEmptyTooth() {
@@ -749,32 +756,36 @@ function createEmptyTooth() {
 }
 
 function renderPatients() {
-    const list = document.getElementById('patientsList');
+    var list = document.getElementById('patientsList');
     if (!patients.length) {
         list.innerHTML = '<p style="color: #95a5a6; font-size: 0.85em; text-align: center; padding: 20px;">No hay pacientes registrados</p>';
         return;
     }
 
-    list.innerHTML = patients.map(p => `
-        <div class="patient-item ${p.id === currentPatientId ? 'active' : ''}" onclick="selectPatient('${p.id}')">
-            <div class="patient-name">${p.lastName}, ${p.name}</div>
-            <div class="patient-dni">DNI: ${p.dni}${p.birthdate ? ' | ' + formatDate(p.birthdate) : ''}</div>
-        </div>
-    `).join('');
+    list.innerHTML = patients.map(function(p) {
+        var activeClass = p.id === currentPatientId ? 'active' : '';
+        var birthText = p.birthdate ? ' | ' + formatDate(p.birthdate) : '';
+        return '<div class="patient-item ' + activeClass + '" onclick="selectPatient(\'' + p.id + '\')">' +
+            '<div class="patient-name">' + p.lastName + ', ' + p.name + '</div>' +
+            '<div class="patient-dni">DNI: ' + p.dni + birthText + '</div>' +
+            '</div>';
+    }).join('');
 }
 
 function selectPatient(id) {
     currentPatientId = id;
     selectedTooth = null;
-    const patient = patients.find(p => p.id === id);
+    var patient = patients.find(function(p) { return p.id === id; });
 
     document.getElementById('noPatient').style.display = 'none';
     document.getElementById('patientContent').style.display = 'block';
     document.getElementById('sidebar').classList.remove('active');
     document.getElementById('sidebarOverlay').classList.remove('active');
 
-    document.getElementById('patientDisplayName').textContent = `${patient.lastName}, ${patient.name}`;
-    document.getElementById('patientDisplayInfo').textContent = `DNI: ${patient.dni}${patient.birthdate ? ' | Nac: ' + formatDate(patient.birthdate) : ''}`;
+    document.getElementById('patientDisplayName').textContent = patient.lastName + ', ' + patient.name;
+    var infoText = 'DNI: ' + patient.dni;
+    if (patient.birthdate) infoText += ' | Nac: ' + formatDate(patient.birthdate);
+    document.getElementById('patientDisplayInfo').textContent = infoText;
 
     renderTeeth();
     renderPatients();
@@ -784,15 +795,15 @@ function selectPatient(id) {
 }
 
 function deletePatient() {
-    if (!confirm('¿Eliminar permanentemente este paciente y todos sus registros?')) return;
-    patients = patients.filter(p => p.id !== currentPatientId);
+    if (!confirm('Eliminar permanentemente este paciente y todos sus registros?')) return;
+    patients = patients.filter(function(p) { return p.id !== currentPatientId; });
     savePatients();
     currentPatientId = null;
     selectedTooth = null;
     document.getElementById('patientContent').style.display = 'none';
     document.getElementById('noPatient').style.display = 'block';
     renderPatients();
-    showAlert('🗑️ Paciente eliminado');
+    showAlert('Paciente eliminado');
 }
 
 function savePatients() {
@@ -801,28 +812,28 @@ function savePatients() {
 
 function formatDate(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
+    var d = new Date(dateStr);
     return d.toLocaleDateString('es-ES');
 }
 
 // ==================== PIEZAS DENTALES ====================
 function renderTeeth() {
-    const patient = getCurrentPatient();
+    var patient = getCurrentPatient();
     if (!patient) return;
 
-    document.querySelectorAll('.tooth-btn').forEach(btn => {
-        const num = parseInt(btn.dataset.tooth);
-        const tooth = patient.teeth[num];
+    document.querySelectorAll('.tooth-btn').forEach(function(btn) {
+        var num = parseInt(btn.dataset.tooth);
+        var tooth = patient.teeth[num];
         btn.className = 'tooth-btn';
         btn.innerHTML = num;
 
         if (selectedTooth === num) btn.classList.add('active');
 
         if (tooth && hasData(tooth)) {
-            const maxProbe = getMaxProbe(tooth);
+            var maxProbe = getMaxProbe(tooth);
             if (tooth.implant === '1') {
                 btn.classList.add('filled');
-                btn.innerHTML = `${num}<span class="tooth-badge implant">I</span>`;
+                btn.innerHTML = num + '<span class="tooth-badge implant">I</span>';
             } else if (maxProbe >= CONFIG.MAX_DEPTH_DANGER) {
                 btn.classList.add('danger');
             } else if (maxProbe >= CONFIG.MAX_DEPTH_WARNING) {
@@ -832,30 +843,31 @@ function renderTeeth() {
             }
 
             if (tooth.bleeding === '1') {
-                btn.innerHTML = `${num}<span class="tooth-badge bleeding">B</span>`;
+                btn.innerHTML = num + '<span class="tooth-badge bleeding">B</span>';
             }
         }
     });
 }
 
 function hasData(tooth) {
-    return Object.values(tooth).some(v => v !== '' && v !== undefined);
+    return Object.values(tooth).some(function(v) { return v !== '' && v !== undefined; });
 }
 
 function getMaxProbe(tooth) {
-    const vals = [tooth.probeProximal, tooth.probeMedio, tooth.probeDistal]
-        .map(v => parseFloat(v)).filter(v => !isNaN(v));
-    return vals.length ? Math.max(...vals) : 0;
+    var vals = [tooth.probeProximal, tooth.probeMedio, tooth.probeDistal]
+        .map(function(v) { return parseFloat(v); })
+        .filter(function(v) { return !isNaN(v); });
+    return vals.length ? Math.max.apply(null, vals) : 0;
 }
 
 function selectTooth(num) {
-    const patient = getCurrentPatient();
+    var patient = getCurrentPatient();
     if (!patient) return;
 
     selectedTooth = num;
-    const tooth = patient.teeth[num];
+    var tooth = patient.teeth[num];
 
-    document.getElementById('selectedToothTitle').textContent = `📋 Pieza ${num} - ${getToothName(num)}`;
+    document.getElementById('selectedToothTitle').textContent = 'Pieza ' + num + ' - ' + getToothName(num);
 
     document.getElementById('probeProximal').value = tooth.probeProximal || '';
     document.getElementById('probeMedio').value = tooth.probeMedio || '';
@@ -882,7 +894,7 @@ function selectTooth(num) {
 }
 
 function getToothName(num) {
-    const names = {
+    var names = {
         11: 'Incisivo central sup. der.', 12: 'Incisivo lateral sup. der.', 13: 'Canino sup. der.',
         14: '1er premolar sup. der.', 15: '2do premolar sup. der.', 16: '1er molar sup. der.',
         17: '2do molar sup. der.', 18: '3er molar sup. der.',
@@ -903,10 +915,11 @@ function autoSave() {
     if (CONFIG.AUTO_SAVE) saveTooth(false);
 }
 
-function saveTooth(showConfirm = true) {
-    const patient = getCurrentPatient();
+function saveTooth(showConfirm) {
+    showConfirm = showConfirm !== false;
+    var patient = getCurrentPatient();
     if (!patient || !selectedTooth) {
-        showAlert('❌ Selecciona una pieza primero', 'error');
+        showAlert('Selecciona una pieza primero', 'error');
         return;
     }
 
@@ -932,50 +945,52 @@ function saveTooth(showConfirm = true) {
     updateStats();
 
     if (showConfirm) {
-        showAlert(`✅ Pieza ${selectedTooth} guardada`);
-        speak(`Pieza ${selectedTooth} guardada`);
+        showAlert('Pieza ' + selectedTooth + ' guardada');
+        speak('Pieza ' + selectedTooth + ' guardada');
         if (navigator.vibrate) navigator.vibrate(50);
     }
 }
 
 function updateStats() {
-    const patient = getCurrentPatient();
+    var patient = getCurrentPatient();
     if (!patient) return;
 
-    let completed = 0, bleeding = 0, plaque = 0, totalDepth = 0, depthCount = 0;
+    var completed = 0, bleeding = 0, plaque = 0, totalDepth = 0, depthCount = 0;
 
-    Object.values(patient.teeth).forEach(tooth => {
+    Object.values(patient.teeth).forEach(function(tooth) {
         if (hasData(tooth)) completed++;
         if (tooth.bleeding === '1') bleeding++;
         if (tooth.plaque === '1') plaque++;
 
-        const depths = [tooth.probeProximal, tooth.probeMedio, tooth.probeDistal]
-            .map(v => parseFloat(v)).filter(v => !isNaN(v));
+        var depths = [tooth.probeProximal, tooth.probeMedio, tooth.probeDistal]
+            .map(function(v) { return parseFloat(v); })
+            .filter(function(v) { return !isNaN(v); });
         if (depths.length) {
-            totalDepth += depths.reduce((a, b) => a + b, 0) / depths.length;
+            var avg = depths.reduce(function(a, b) { return a + b; }, 0) / depths.length;
+            totalDepth += avg;
             depthCount++;
         }
     });
 
-    const avgDepth = depthCount ? (totalDepth / depthCount).toFixed(1) : '0.0';
+    var avgDepth = depthCount ? (totalDepth / depthCount).toFixed(1) : '0.0';
 
-    document.getElementById('completedTeeth').textContent = `${completed}/32`;
-    document.getElementById('bleedPercent').textContent = `${Math.round((bleeding/32)*100)}%`;
-    document.getElementById('plaquePercent').textContent = `${Math.round((plaque/32)*100)}%`;
+    document.getElementById('completedTeeth').textContent = completed + '/32';
+    document.getElementById('bleedPercent').textContent = Math.round((bleeding/32)*100) + '%';
+    document.getElementById('plaquePercent').textContent = Math.round((plaque/32)*100) + '%';
 
-    const depthEl = document.getElementById('avgDepth');
-    depthEl.textContent = `${avgDepth} mm`;
+    var depthEl = document.getElementById('avgDepth');
+    depthEl.textContent = avgDepth + ' mm';
     depthEl.className = 'stat-value' + (parseFloat(avgDepth) >= CONFIG.MAX_DEPTH_WARNING ? ' danger' : '');
 }
 
 function getCurrentPatient() {
-    return patients.find(p => p.id === currentPatientId);
+    return patients.find(function(p) { return p.id === currentPatientId; });
 }
 
 // ==================== MODOS DE ENTRADA ====================
 function switchMode(mode, evt) {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    if (evt?.target) evt.target.classList.add('active');
+    document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (evt && evt.target) evt.target.classList.add('active');
 
     document.getElementById('voiceMode').style.display = mode === 'voice' ? 'block' : 'none';
     document.getElementById('textMode').style.display = mode === 'text' ? 'block' : 'none';
@@ -983,7 +998,7 @@ function switchMode(mode, evt) {
 
 // ==================== RECONOCIMIENTO DE VOZ ====================
 function initVoice() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return false;
 
     voiceRec = new SR();
@@ -992,20 +1007,20 @@ function initVoice() {
     voiceRec.interimResults = true;
     voiceRec.maxAlternatives = 1;
 
-    voiceRec.onstart = () => {
+    voiceRec.onstart = function() {
         isListening = true;
         document.getElementById('micButton').classList.add('listening');
-        document.getElementById('voiceStatus').textContent = '🔴 Escuchando... habla ahora';
+        document.getElementById('voiceStatus').textContent = 'Escuchando... habla ahora';
         document.getElementById('voiceTranscript').textContent = '';
         document.getElementById('voiceTranscript').classList.remove('has-text');
     };
 
-    voiceRec.onresult = (e) => {
-        let final = '';
-        let interim = '';
+    voiceRec.onresult = function(e) {
+        var final = '';
+        var interim = '';
 
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-            const transcript = e.results[i][0].transcript;
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+            var transcript = e.results[i][0].transcript;
             if (e.results[i].isFinal) {
                 final += transcript + ' ';
             } else {
@@ -1013,7 +1028,7 @@ function initVoice() {
             }
         }
 
-        const display = document.getElementById('voiceTranscript');
+        var display = document.getElementById('voiceTranscript');
         if (interim) {
             display.textContent = interim;
             display.classList.add('has-text');
@@ -1025,21 +1040,21 @@ function initVoice() {
         }
     };
 
-    voiceRec.onerror = (e) => {
+    voiceRec.onerror = function(e) {
         if (e.error === 'not-allowed') {
-            showAlert('❌ Micrófono bloqueado. Permite el acceso en la configuración del navegador.', 'error');
+            showAlert('Microfono bloqueado. Permite el acceso en la configuracion del navegador.', 'error');
             stopVoice();
         } else if (e.error === 'network') {
-            showAlert('❌ Error de red. Verifica tu conexión a internet.', 'error');
+            showAlert('Error de red. Verifica tu conexion a internet.', 'error');
             stopVoice();
         } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
             console.error('Voice error:', e.error);
         }
     };
 
-    voiceRec.onend = () => {
+    voiceRec.onend = function() {
         if (isListening) {
-            setTimeout(() => {
+            setTimeout(function() {
                 if (isListening) {
                     try { voiceRec.start(); } catch(err) {}
                 }
@@ -1052,7 +1067,7 @@ function initVoice() {
 
 function toggleVoice() {
     if (!voiceRec && !initVoice()) {
-        showAlert('❌ Reconocimiento de voz no disponible en este navegador', 'error');
+        showAlert('Reconocimiento de voz no disponible en este navegador', 'error');
         return;
     }
 
@@ -1069,7 +1084,7 @@ function startVoice() {
         voiceRec.start();
         speak('Escuchando');
     } catch (err) {
-        showAlert('❌ Error al iniciar micrófono: ' + err.message, 'error');
+        showAlert('Error al iniciar microfono: ' + err.message, 'error');
     }
 }
 
@@ -1077,7 +1092,7 @@ function stopVoice() {
     isListening = false;
     try { voiceRec.stop(); } catch(err) {}
     document.getElementById('micButton').classList.remove('listening');
-    document.getElementById('voiceStatus').textContent = 'Presiona el micrófono y habla';
+    document.getElementById('voiceStatus').textContent = 'Presiona el microfono y habla';
 }
 
 function simulateVoice(text) {
@@ -1087,11 +1102,11 @@ function simulateVoice(text) {
 }
 
 // ==================== PARSER NLP MEJORADO ====================
-const NUMBER_WORDS = {
+var NUMBER_WORDS = {
     'cero': 0, 'uno': 1, 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
     'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
     'once': 11, 'doce': 12, 'trece': 13, 'catorce': 14, 'quince': 15,
-    'dieciseis': 16, 'dieciséis': 16, 'diecisiete': 17, 'dieciocho': 18,
+    'dieciseis': 16, 'diecisiete': 17, 'dieciocho': 18,
     'diecinueve': 19, 'veinte': 20, 'veintiuno': 21, 'veintidos': 22,
     'veintitres': 23, 'veinticuatro': 24, 'veinticinco': 25,
     'veintiseis': 26, 'veintisiete': 27, 'veintiocho': 28,
@@ -1099,20 +1114,20 @@ const NUMBER_WORDS = {
 };
 
 function parseNumberWord(text) {
-    const lower = text.toLowerCase().trim();
+    var lower = text.toLowerCase().trim();
     if (NUMBER_WORDS[lower] !== undefined) return NUMBER_WORDS[lower];
-    const num = parseInt(text);
+    var num = parseInt(text);
     return isNaN(num) ? null : num;
 }
 
 function processVoice(text) {
     lastCommand = text;
-    console.log('🎤 Procesando:', text);
+    console.log('Procesando:', text);
 
-    const data = parseCommand(text);
+    var data = parseCommand(text);
     if (!data) {
-        showAlert('❌ No entendí el comando. Intenta: "Pieza 14, profundidad 3 4 3"', 'error');
-        speak('No entendí. Repite por favor.');
+        showAlert('No entendi el comando. Intenta: "Pieza 14, profundidad 3 4 3"', 'error');
+        speak('No entendi. Repite por favor.');
         return;
     }
 
@@ -1124,16 +1139,16 @@ function processVoice(text) {
         navigateTooth(-1);
     } else if (data.action === 'correct') {
         if (lastCommand) {
-            showAlert('🔄 Repitiendo último comando: ' + lastCommand, 'warning');
+            showAlert('Repitiendo ultimo comando: ' + lastCommand, 'warning');
             processVoice(lastCommand);
         }
     }
 }
 
 function processText() {
-    const text = document.getElementById('textInput').value.trim();
+    var text = document.getElementById('textInput').value.trim();
     if (!text) {
-        showAlert('❌ Escribe un comando primero', 'error');
+        showAlert('Escribe un comando primero', 'error');
         return;
     }
     processVoice(text);
@@ -1141,23 +1156,25 @@ function processText() {
 }
 
 function parseCommand(text) {
-    const lower = text.toLowerCase();
+    var lower = text.toLowerCase();
 
-    // Comandos de navegación
-    if (/(siguiente|next|próximo|proximo)/.test(lower)) return { action: 'next' };
-    if (/(anterior|prev|previo|atrás|atras)/.test(lower)) return { action: 'prev' };
-    if (/(corregir|corrección|correccion|repetir|otra vez)/.test(lower)) return { action: 'correct' };
+    // Comandos de navegacion
+    if (/\b(siguiente|next|proximo)\b/.test(lower)) return { action: 'next' };
+    if (/\b(anterior|prev|previo|atras)\b/.test(lower)) return { action: 'prev' };
+    if (/\b(corregir|repetir|otra vez)\b/.test(lower)) return { action: 'correct' };
 
-    // Buscar número de pieza
-    let toothNum = null;
+    // Buscar numero de pieza
+    var toothNum = null;
 
-    const toothMatch = text.match(/(?:pieza|diente|pieza dental|numero|número|pza)[\s:]*(\d+|\w+)/i);
+    // Formato: "pieza 14", "diente 14", "numero 14", "14"
+    var toothMatch = text.match(/\b(?:pieza|diente|numero|pza)\b[\s:]*(\d+|\w+)/i);
     if (toothMatch) {
         toothNum = parseNumberWord(toothMatch[1]);
     }
 
+    // Tambien buscar numero suelto al inicio (ej: "14 profundidad...")
     if (!toothNum) {
-        const startMatch = text.match(/^\s*(\d{2})/);
+        var startMatch = text.match(/^\s*(\d{2})\b/);
         if (startMatch) toothNum = parseInt(startMatch[1]);
     }
 
@@ -1165,69 +1182,69 @@ function parseCommand(text) {
         return null;
     }
 
-    const result = { toothNumber: toothNum };
+    var result = { toothNumber: toothNum };
 
     // PROFUNDIDAD DE SONDAJE
-    let m = lower.match(/(?:profundidad|prof|sondaje|sondajes|calculo|calculus)[\s:]*([\d\.\s\-,]+)/);
+    var m = lower.match(/(?:profundidad|prof|sondaje)\b[\s:]*([\d\.\s\-,]+)/);
     if (m) {
-        const vals = m[1].split(/[\s\-,]+/).map(v => parseFloat(v)).filter(v => !isNaN(v));
+        var vals = m[1].split(/[\s\-,]+/).map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
         if (vals.length >= 1) result.probeProximal = vals[0];
         if (vals.length >= 2) result.probeMedio = vals[1];
         if (vals.length >= 3) result.probeDistal = vals[2];
     }
 
     // MARGEN GINGIVAL
-    m = lower.match(/(?:margen|margenes|márgenes|retraccion|retracción)[\s:]*([\d\.\s\-,]+)/);
+    m = lower.match(/(?:margen|margenes|retraccion)\b[\s:]*([\d\.\s\-,]+)/);
     if (m) {
-        const vals = m[1].split(/[\s\-,]+/).map(v => parseFloat(v)).filter(v => !isNaN(v));
+        var vals = m[1].split(/[\s\-,]+/).map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
         if (vals.length >= 1) result.gingivialProximal = vals[0];
         if (vals.length >= 2) result.gingivialMedio = vals[1];
         if (vals.length >= 3) result.gingivialDistal = vals[2];
     }
 
-    // NIVEL DE INSERCIÓN
-    m = lower.match(/(?:insercion|inserción|inser)[\s:]*([\d\.\s\-,]+)/);
+    // NIVEL DE INSERCION
+    m = lower.match(/(?:insercion|inser)\b[\s:]*([\d\.\s\-,]+)/);
     if (m) {
-        const vals = m[1].split(/[\s\-,]+/).map(v => parseFloat(v)).filter(v => !isNaN(v));
+        var vals = m[1].split(/[\s\-,]+/).map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
         if (vals.length >= 1) result.attachmentProximal = vals[0];
         if (vals.length >= 2) result.attachmentMedio = vals[1];
         if (vals.length >= 3) result.attachmentDistal = vals[2];
     }
 
     // SANGRADO
-    m = lower.match(/(?:sangrado|sangra|sangrando|bop)[\s:]*(s[iíÍ]|yes|positivo|no|negativo)/);
-    if (m) result.bleeding = /s[iíÍ]|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:sangrado|sangra|bop)\b[\s:]*(si|yes|positivo|no|negativo)/);
+    if (m) result.bleeding = /si|yes|positivo/.test(m[1]) ? '1' : '0';
 
     // PLACA
-    m = lower.match(/(?:placa|placas|biofilm)[\s:]*(s[iíÍ]|yes|positivo|no|negativo)/);
-    if (m) result.plaque = /s[iíÍ]|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:placa|placas|biofilm)\b[\s:]*(si|yes|positivo|no|negativo)/);
+    if (m) result.plaque = /si|yes|positivo/.test(m[1]) ? '1' : '0';
 
-    // FURCACIÓN
-    m = lower.match(/(?:furcacion|furcación|furca)[\s:]*(i{1,3}|1|2|3)/i);
+    // FURCACION
+    m = lower.match(/(?:furcacion|furca)\b[\s:]*(i{1,3}|1|2|3)/i);
     if (m) {
-        const val = m[1].toUpperCase();
+        var val = m[1].toUpperCase();
         result.furcation = val === '1' ? 'I' : val === '2' ? 'II' : val === '3' ? 'III' : val;
     }
 
     // MOVILIDAD
-    m = lower.match(/(?:movilidad|movil|mueve)[\s:]*(s[iíÍ]|yes|positivo|no|negativo)/);
-    if (m) result.mobility = /s[iíÍ]|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:movilidad|movil|mueve)\b[\s:]*(si|yes|positivo|no|negativo)/);
+    if (m) result.mobility = /si|yes|positivo/.test(m[1]) ? '1' : '0';
 
     // IMPLANTE
-    m = lower.match(/(?:implante|implantes|implant)[\s:]*(s[iíÍ]|yes|positivo|no|negativo)/);
-    if (m) result.implant = /s[iíÍ]|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:implante|implant)\b[\s:]*(si|yes|positivo|no|negativo)/);
+    if (m) result.implant = /si|yes|positivo/.test(m[1]) ? '1' : '0';
 
     return result;
 }
 
 function applyData(data) {
-    const patient = getCurrentPatient();
+    var patient = getCurrentPatient();
     if (!patient || !patient.teeth[data.toothNumber]) {
-        showAlert(`❌ Pieza ${data.toothNumber} no válida`, 'error');
+        showAlert('Pieza ' + data.toothNumber + ' no valida', 'error');
         return;
     }
 
-    const tooth = patient.teeth[data.toothNumber];
+    var tooth = patient.teeth[data.toothNumber];
 
     if (data.gingivialProximal !== undefined) tooth.gingivialProximal = data.gingivialProximal;
     if (data.gingivialMedio !== undefined) tooth.gingivialMedio = data.gingivialMedio;
@@ -1247,69 +1264,69 @@ function applyData(data) {
     savePatients();
     selectTooth(data.toothNumber);
 
-    const confirmMsg = `Pieza ${data.toothNumber} actualizada`;
-    showAlert(`✅ ${confirmMsg}`);
+    var confirmMsg = 'Pieza ' + data.toothNumber + ' actualizada';
+    showAlert(confirmMsg);
     speak(confirmMsg);
 
     if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 }
 
 function navigateTooth(direction) {
-    const allTeeth = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,48,47,46,45,44,43,42,41];
-    const currentIdx = allTeeth.indexOf(selectedTooth);
-    const newIdx = currentIdx + direction;
+    var allTeeth = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,48,47,46,45,44,43,42,41];
+    var currentIdx = allTeeth.indexOf(selectedTooth);
+    var newIdx = currentIdx + direction;
 
     if (newIdx >= 0 && newIdx < allTeeth.length) {
         selectTooth(allTeeth[newIdx]);
-        speak(`Pieza ${allTeeth[newIdx]}`);
+        speak('Pieza ' + allTeeth[newIdx]);
     }
 }
 
 // ==================== EXPORTAR E IMPRIMIR ====================
 function printPatient() {
-    const patient = getCurrentPatient();
+    var patient = getCurrentPatient();
     if (!patient) return;
 
-    let html = `<div style="padding: 20px; font-family: Arial; font-size: 11px;">
-        <h1 style="color: #0066cc; text-align: center;">PERIODONTOGRAMA</h1>
-        <p><strong>Paciente:</strong> ${patient.lastName}, ${patient.name}</p>
-        <p><strong>DNI:</strong> ${patient.dni}</p>
-        <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>`;
+    var html = '<div style="padding: 20px; font-family: Arial; font-size: 11px;">' +
+        '<h1 style="color: #0066cc; text-align: center;">PERIODONTOGRAMA</h1>' +
+        '<p><strong>Paciente:</strong> ' + patient.lastName + ', ' + patient.name + '</p>' +
+        '<p><strong>DNI:</strong> ' + patient.dni + '</p>' +
+        '<p><strong>Fecha:</strong> ' + new Date().toLocaleDateString('es-ES') + '</p>';
 
-    const cuadrantes = [
+    var cuadrantes = [
         { num: 1, nombre: 'Sup. Izq.', piezas: [18,17,16,15,14,13,12,11] },
         { num: 2, nombre: 'Sup. Der.', piezas: [21,22,23,24,25,26,27,28] },
         { num: 3, nombre: 'Inf. Der.', piezas: [31,32,33,34,35,36,37,38] },
         { num: 4, nombre: 'Inf. Izq.', piezas: [48,47,46,45,44,43,42,41] }
     ];
 
-    cuadrantes.forEach(quad => {
-        html += `<h3 style="color: white; background: #0066cc; padding: 6px; margin: 10px 0 5px 0; font-size: 11px;">Cuadrante ${quad.num} - ${quad.nombre}</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
-        <thead><tr style="background: #0066cc; color: white;">
-        <th style="border: 1px solid #000; padding: 4px;">Pza</th>
-        <th style="border: 1px solid #000; padding: 4px;">Margen P/M/D</th>
-        <th style="border: 1px solid #000; padding: 4px;">Prof P/M/D</th>
-        <th style="border: 1px solid #000; padding: 4px;">Inserc P/M/D</th>
-        <th style="border: 1px solid #000; padding: 4px;">Sang</th>
-        <th style="border: 1px solid #000; padding: 4px;">Pl</th>
-        <th style="border: 1px solid #000; padding: 4px;">Furc</th>
-        <th style="border: 1px solid #000; padding: 4px;">Mov</th>
-        <th style="border: 1px solid #000; padding: 4px;">Impl</th>
-        </tr></thead><tbody>`;
+    cuadrantes.forEach(function(quad) {
+        html += '<h3 style="color: white; background: #0066cc; padding: 6px; margin: 10px 0 5px 0; font-size: 11px;">Cuadrante ' + quad.num + ' - ' + quad.nombre + '</h3>' +
+        '<table style="width: 100%; border-collapse: collapse; font-size: 9px;">' +
+        '<thead><tr style="background: #0066cc; color: white;">' +
+        '<th style="border: 1px solid #000; padding: 4px;">Pza</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Margen P/M/D</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Prof P/M/D</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Inserc P/M/D</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Sang</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Pl</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Furc</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Mov</th>' +
+        '<th style="border: 1px solid #000; padding: 4px;">Impl</th>' +
+        '</tr></thead><tbody>';
 
-        quad.piezas.forEach(num => {
-            const tooth = patient.teeth[num];
+        quad.piezas.forEach(function(num) {
+            var tooth = patient.teeth[num];
             if (tooth && hasData(tooth)) {
-                html += `<tr><td style="border: 1px solid #000; padding: 4px;"><strong>${num}</strong></td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.gingivialProximal||'-'}/${tooth.gingivialMedio||'-'}/${tooth.gingivialDistal||'-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.probeProximal||'-'}/${tooth.probeMedio||'-'}/${tooth.probeDistal||'-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.attachmentProximal||'-'}/${tooth.attachmentMedio||'-'}/${tooth.attachmentDistal||'-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.bleeding === '1' ? 'Sí' : '-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.plaque === '1' ? 'Sí' : '-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.furcation || '-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.mobility === '1' ? 'Sí' : '-'}</td>
-                <td style="border: 1px solid #000; padding: 4px;">${tooth.implant === '1' ? 'Sí' : '-'}</td></tr>`;
+                html += '<tr><td style="border: 1px solid #000; padding: 4px;"><strong>' + num + '</strong></td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.gingivialProximal||'-') + '/' + (tooth.gingivialMedio||'-') + '/' + (tooth.gingivialDistal||'-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.probeProximal||'-') + '/' + (tooth.probeMedio||'-') + '/' + (tooth.probeDistal||'-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.attachmentProximal||'-') + '/' + (tooth.attachmentMedio||'-') + '/' + (tooth.attachmentDistal||'-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.bleeding === '1' ? 'Si' : '-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.plaque === '1' ? 'Si' : '-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.furcation || '-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.mobility === '1' ? 'Si' : '-') + '</td>' +
+                '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.implant === '1' ? 'Si' : '-') + '</td></tr>';
             }
         });
         html += '</tbody></table>';
@@ -1317,85 +1334,76 @@ function printPatient() {
 
     html += '</div>';
 
-    const elem = document.createElement('div');
+    var elem = document.createElement('div');
     elem.innerHTML = html;
-    const opt = {
+    var opt = {
         margin: 10,
-        filename: `Periodontograma_${patient.dni}.pdf`,
+        filename: 'Periodontograma_' + patient.dni + '.pdf',
         image: {type: 'jpeg', quality: 0.98},
         html2canvas: {scale: 2, backgroundColor: '#fff'},
         jsPDF: {orientation: 'landscape', unit: 'mm', format: 'a4'}
     };
 
     html2pdf().set(opt).from(elem).save();
-    showAlert('📄 Generando PDF...');
+    showAlert('Generando PDF...');
 }
 
 function exportPatientCSV() {
-    const patient = getCurrentPatient();
+    var patient = getCurrentPatient();
     if (!patient) return;
 
-    let csv = `PERIODONTOGRAMA
-Paciente,${patient.lastName} ${patient.name}
-DNI,${patient.dni}
+    var csv = 'PERIODONTOGRAMA\nPaciente,' + patient.lastName + ' ' + patient.name + '\nDNI,' + patient.dni + '\n\nPieza,Margen P/M/D,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcacion,Movilidad,Implante\n';
 
-Pieza,Margen P/M/D,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcación,Movilidad,Implante
-`;
-
-    Object.entries(patient.teeth).forEach(([num, tooth]) => {
+    Object.entries(patient.teeth).forEach(function(entry) {
+        var num = entry[0];
+        var tooth = entry[1];
         if (hasData(tooth)) {
-            csv += `${num},${tooth.gingivialProximal||''}/${tooth.gingivialMedio||''}/${tooth.gingivialDistal||''},`;
-            csv += `${tooth.probeProximal||''}/${tooth.probeMedio||''}/${tooth.probeDistal||''},`;
-            csv += `${tooth.attachmentProximal||''}/${tooth.attachmentMedio||''}/${tooth.attachmentDistal||''},`;
-            csv += `${tooth.bleeding === '1' ? 'Sí' : 'No'},${tooth.plaque === '1' ? 'Sí' : 'No'},`;
-            csv += `${tooth.furcation || '-'},${tooth.mobility === '1' ? 'Sí' : 'No'},${tooth.implant === '1' ? 'Sí' : 'No'}
-`;
+            csv += num + ',' + (tooth.gingivialProximal||'') + '/' + (tooth.gingivialMedio||'') + '/' + (tooth.gingivialDistal||'') + ',';
+            csv += (tooth.probeProximal||'') + '/' + (tooth.probeMedio||'') + '/' + (tooth.probeDistal||'') + ',';
+            csv += (tooth.attachmentProximal||'') + '/' + (tooth.attachmentMedio||'') + '/' + (tooth.attachmentDistal||'') + ',';
+            csv += (tooth.bleeding === '1' ? 'Si' : 'No') + ',' + (tooth.plaque === '1' ? 'Si' : 'No') + ',';
+            csv += (tooth.furcation || '-') + ',' + (tooth.mobility === '1' ? 'Si' : 'No') + ',' + (tooth.implant === '1' ? 'Si' : 'No') + '\n';
         }
     });
 
-    downloadCSV(csv, `Periodontograma_${patient.dni}.csv`);
-    showAlert('📄 CSV exportado');
+    downloadCSV(csv, 'Periodontograma_' + patient.dni + '.csv');
+    showAlert('CSV exportado');
 }
 
 function exportAllCSV() {
     if (!patients.length) {
-        showAlert('❌ No hay pacientes', 'error');
+        showAlert('No hay pacientes', 'error');
         return;
     }
 
-    let csv = 'PERIODONTOGRAMA - EXPORTACIÓN COMPLETA
-Fecha,' + new Date().toLocaleDateString('es-ES') + '
+    var csv = 'PERIODONTOGRAMA - EXPORTACION COMPLETA\nFecha,' + new Date().toLocaleDateString('es-ES') + '\n\n';
 
-';
+    patients.forEach(function(patient) {
+        csv += '===== ' + patient.lastName + ', ' + patient.name + ' (DNI: ' + patient.dni + ') =====\n';
+        csv += 'Pieza,Margen P/M/D,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcacion,Movilidad,Implante\n';
 
-    patients.forEach(patient => {
-        csv += `===== ${patient.lastName}, ${patient.name} (DNI: ${patient.dni}) =====
-`;
-        csv += 'Pieza,Margen P/M/D,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcación,Movilidad,Implante
-';
-
-        Object.entries(patient.teeth).forEach(([num, tooth]) => {
+        Object.entries(patient.teeth).forEach(function(entry) {
+            var num = entry[0];
+            var tooth = entry[1];
             if (hasData(tooth)) {
-                csv += `${num},${tooth.gingivialProximal||''}/${tooth.gingivialMedio||''}/${tooth.gingivialDistal||''},`;
-                csv += `${tooth.probeProximal||''}/${tooth.probeMedio||''}/${tooth.probeDistal||''},`;
-                csv += `${tooth.attachmentProximal||''}/${tooth.attachmentMedio||''}/${tooth.attachmentDistal||''},`;
-                csv += `${tooth.bleeding === '1' ? 'Sí' : 'No'},${tooth.plaque === '1' ? 'Sí' : 'No'},`;
-                csv += `${tooth.furcation || '-'},${tooth.mobility === '1' ? 'Sí' : 'No'},${tooth.implant === '1' ? 'Sí' : 'No'}
-`;
+                csv += num + ',' + (tooth.gingivialProximal||'') + '/' + (tooth.gingivialMedio||'') + '/' + (tooth.gingivialDistal||'') + ',';
+                csv += (tooth.probeProximal||'') + '/' + (tooth.probeMedio||'') + '/' + (tooth.probeDistal||'') + ',';
+                csv += (tooth.attachmentProximal||'') + '/' + (tooth.attachmentMedio||'') + '/' + (tooth.attachmentDistal||'') + ',';
+                csv += (tooth.bleeding === '1' ? 'Si' : 'No') + ',' + (tooth.plaque === '1' ? 'Si' : 'No') + ',';
+                csv += (tooth.furcation || '-') + ',' + (tooth.mobility === '1' ? 'Si' : 'No') + ',' + (tooth.implant === '1' ? 'Si' : 'No') + '\n';
             }
         });
-        csv += '
-';
+        csv += '\n';
     });
 
-    downloadCSV(csv, `PerioDental_Backup_${new Date().toISOString().split('T')[0]}.csv`);
-    showAlert('💾 Base de datos exportada');
+    downloadCSV(csv, 'PerioDental_Backup_' + new Date().toISOString().split('T')[0] + '.csv');
+    showAlert('Base de datos exportada');
 }
 
 function downloadCSV(csv, filename) {
-    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
@@ -1404,80 +1412,81 @@ function downloadCSV(csv, filename) {
 }
 
 function importCSV(event) {
-    const file = event.target.files[0];
+    var file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    var reader = new FileReader();
+    reader.onload = function(e) {
         try {
-            const csv = e.target.result;
-            const lines = csv.split('
-');
-            let currentPatient = null;
-            let importCount = 0;
+            var csv = e.target.result;
+            var lines = csv.split('\n');
+            var currentPatient = null;
+            var importCount = 0;
 
-            for (let i = 3; i < lines.length; i++) {
-                const line = lines[i].trim();
+            for (var i = 3; i < lines.length; i++) {
+                var line = lines[i].trim();
                 if (!line) continue;
 
-                if (line.startsWith('===== ')) {
-                    if (currentPatient && !patients.find(p => p.dni === currentPatient.dni)) {
+                if (line.indexOf('===== ') === 0) {
+                    if (currentPatient && !patients.find(function(p) { return p.dni === currentPatient.dni; })) {
                         patients.push(currentPatient);
                         importCount++;
                     }
 
-                    const match = line.match(/===== (.*), (.*) \(DNI: (.*)\)/);
+                    var match = line.match(/===== (.*), (.*) \(DNI: (.*)\)/);
                     if (match) {
                         currentPatient = {
                             id: Date.now().toString() + Math.random(),
                             lastName: match[1], name: match[2], dni: match[3],
                             birthdate: '', teeth: {}
                         };
-                        for (let j = 11; j <= 48; j++) {
+                        for (var j = 11; j <= 48; j++) {
                             if (Math.floor(j/10) >= 1 && Math.floor(j/10) <= 4 && j % 10 <= 8 && j % 10 >= 1) {
                                 currentPatient.teeth[j] = createEmptyTooth();
                             }
                         }
                     }
                 } else if (currentPatient && !isNaN(parseInt(line.split(',')[0]))) {
-                    const parts = line.split(',');
-                    const toothNum = parseInt(parts[0]);
+                    var parts = line.split(',');
+                    var toothNum = parseInt(parts[0]);
                     if (currentPatient.teeth[toothNum]) {
-                        const margin = (parts[1] || '').split('/');
-                        const probe = (parts[2] || '').split('/');
-                        const attach = (parts[3] || '').split('/');
+                        var margin = (parts[1] || '').split('/');
+                        var probe = (parts[2] || '').split('/');
+                        var attach = (parts[3] || '').split('/');
                         currentPatient.teeth[toothNum] = {
-                            gingivialProximal: margin[0]?.trim() || '',
-                            gingivialMedio: margin[1]?.trim() || '',
-                            gingivialDistal: margin[2]?.trim() || '',
-                            probeProximal: probe[0]?.trim() || '',
-                            probeMedio: probe[1]?.trim() || '',
-                            probeDistal: probe[2]?.trim() || '',
-                            attachmentProximal: attach[0]?.trim() || '',
-                            attachmentMedio: attach[1]?.trim() || '',
-                            attachmentDistal: attach[2]?.trim() || '',
-                            bleeding: parts[4]?.trim() === 'Sí' ? '1' : '',
-                            plaque: parts[5]?.trim() === 'Sí' ? '1' : '',
-                            furcation: parts[6]?.trim() === '-' ? '' : parts[6]?.trim() || '',
-                            mobility: parts[7]?.trim() === 'Sí' ? '1' : '',
-                            implant: parts[8]?.trim() === 'Sí' ? '1' : ''
+                            gingivialProximal: margin[0] ? margin[0].trim() : '',
+                            gingivialMedio: margin[1] ? margin[1].trim() : '',
+                            gingivialDistal: margin[2] ? margin[2].trim() : '',
+                            probeProximal: probe[0] ? probe[0].trim() : '',
+                            probeMedio: probe[1] ? probe[1].trim() : '',
+                            probeDistal: probe[2] ? probe[2].trim() : '',
+                            attachmentProximal: attach[0] ? attach[0].trim() : '',
+                            attachmentMedio: attach[1] ? attach[1].trim() : '',
+                            attachmentDistal: attach[2] ? attach[2].trim() : '',
+                            bleeding: parts[4] && parts[4].trim() === 'Si' ? '1' : '',
+                            plaque: parts[5] && parts[5].trim() === 'Si' ? '1' : '',
+                            furcation: parts[6] && parts[6].trim() === '-' ? '' : parts[6] ? parts[6].trim() : '',
+                            mobility: parts[7] && parts[7].trim() === 'Si' ? '1' : '',
+                            implant: parts[8] && parts[8].trim() === 'Si' ? '1' : ''
                         };
                     }
                 }
             }
 
-            if (currentPatient && !patients.find(p => p.dni === currentPatient.dni)) {
+            if (currentPatient && !patients.find(function(p) { return p.dni === currentPatient.dni; })) {
                 patients.push(currentPatient);
                 importCount++;
             }
 
-            patients.sort((a, b) => (a.lastName + a.name).localeCompare(b.lastName + b.name));
+            patients.sort(function(a, b) {
+                return (a.lastName + a.name).localeCompare(b.lastName + b.name);
+            });
             savePatients();
             renderPatients();
-            showAlert(`✅ Importados ${importCount} pacientes`);
+            showAlert('Importados ' + importCount + ' pacientes');
             document.getElementById('csvImportInput').value = '';
         } catch (err) {
-            showAlert('❌ Error importando CSV', 'error');
+            showAlert('Error importando CSV', 'error');
         }
     };
     reader.readAsText(file);
@@ -1485,29 +1494,25 @@ function importCSV(event) {
 
 // ==================== UTILIDADES ====================
 function showHelp() {
-    const helpText = `
-🎤 COMANDOS DE VOZ:
-
-• "Pieza [número]" - Selecciona diente
-• "Profundidad [P] [M] [D]" - Sondaje (ej: 3 4 3)
-• "Margen [P] [M] [D]" - Margen gingival
-• "Inserción [P] [M] [D]" - Nivel de inserción
-• "Sangrado sí/no" - BOP positivo/negativo
-• "Placa sí/no" - Presencia de placa
-• "Furcación I/II/III" - Grado de furcación
-• "Movilidad sí/no" - Movilidad dentaria
-• "Implante sí/no" - Marcar como implante
-• "Siguiente/Anterior" - Navegar entre piezas
-• "Corregir" - Repetir último comando
-
-Ejemplo completo:
-"Pieza catorce, profundidad tres cuatro tres, sangrado sí, placa no"
-    `;
+    var helpText = 'COMANDOS DE VOZ:\n\n' +
+        '"Pieza [numero]" - Selecciona diente\n' +
+        '"Profundidad [P] [M] [D]" - Sondaje (ej: 3 4 3)\n' +
+        '"Margen [P] [M] [D]" - Margen gingival\n' +
+        '"Insercion [P] [M] [D]" - Nivel de insercion\n' +
+        '"Sangrado si/no" - BOP positivo/negativo\n' +
+        '"Placa si/no" - Presencia de placa\n' +
+        '"Furcacion I/II/III" - Grado de furcacion\n' +
+        '"Movilidad si/no" - Movilidad dentaria\n' +
+        '"Implante si/no" - Marcar como implante\n' +
+        '"Siguiente/Anterior" - Navegar entre piezas\n' +
+        '"Corregir" - Repetir ultimo comando\n\n' +
+        'Ejemplo completo:\n' +
+        '"Pieza catorce, profundidad tres cuatro tres, sangrado si, placa no"';
     alert(helpText);
 }
 
 function resetAll() {
-    if (!confirm('¿Cerrar todo y volver al inicio?')) return;
+    if (!confirm('Cerrar todo y volver al inicio?')) return;
     currentPatientId = null;
     selectedTooth = null;
     document.getElementById('patientContent').style.display = 'none';
