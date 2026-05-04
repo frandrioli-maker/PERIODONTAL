@@ -1,9 +1,9 @@
 {
-  "name": "PerioDental - Periodontograma",
+  "name": "PerioDental",
   "short_name": "PerioDental",
-  "description": "Sistema profesional de registro periodontal sin conexión",
-  "start_url": "/periodontograma-pwa.html",
-  "scope": "/",
+  "description": "Sistema profesional de periodontograma",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
@@ -21,39 +21,5 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ],
-  "categories": ["medical", "productivity"],
-  "screenshots": [
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23667eea' width='540' height='720'/><text x='50%' y='50%' font-size='80' fill='white' text-anchor='middle' dominant-baseline='middle'>PerioDental</text></svg>",
-      "sizes": "540x720",
-      "type": "image/svg+xml",
-      "form_factor": "narrow"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Nuevo Paciente",
-      "short_name": "Paciente",
-      "description": "Crear un nuevo paciente",
-      "url": "/periodontograma-pwa.html?action=new-patient",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%2300b894' width='96' height='96'/><text x='50%' y='50%' font-size='50' fill='white' text-anchor='middle' dominant-baseline='middle'>➕</text></svg>",
-          "sizes": "96x96",
-          "type": "image/svg+xml"
-        }
-      ]
-    }
-  ],
-  "share_target": {
-    "action": "/share",
-    "method": "POST",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }

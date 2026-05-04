@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#0066cc">
-    <meta name="description" content="PerioDental - Sistema profesional de periodontograma sin conexión">
+    <meta name="description" content="PerioDental - Sistema profesional de periodontograma">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PerioDental">
@@ -21,6 +21,7 @@
         :root {
             --primary: #0066cc;
             --primary-dark: #0052a3;
+            --accent: #ff6b35;
             --success: #00b894;
             --danger: #d63031;
             --gray-light: #f5f6fa;
@@ -51,7 +52,7 @@
             .main { grid-template-columns: 1fr; }
             .sidebar { position: absolute; left: 0; top: 60px; width: 220px; height: calc(100vh - 60px); z-index: 100; display: none; background: var(--gray-light); }
             .sidebar.active { display: block; }
-            .content { width: 100%; }
+            .content { width: 100%; padding-bottom: 80px !important; }
             .menu-toggle { display: flex !important; }
         }
         .sidebar {
@@ -61,12 +62,12 @@
             overflow-y: auto;
         }
         .sidebar-title { font-size: 0.8em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
-        .content { padding: 15px; overflow-y: auto; background: white; }
+        .content { padding: 15px; overflow-y: auto; background: white; padding-bottom: 30px; }
         .section { margin-bottom: 15px; }
         .section-title { font-size: 0.95em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
         .form-group { margin-bottom: 10px; }
         label { display: block; margin-bottom: 4px; font-size: 0.8em; font-weight: 600; }
-        input[type="text"], input[type="date"], input[type="number"], select {
+        input[type="text"], input[type="date"], input[type="number"], select, textarea {
             width: 100%;
             padding: 8px;
             border: 1px solid var(--gray-medium);
@@ -74,7 +75,7 @@
             font-size: 0.9em;
             font-family: inherit;
         }
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
@@ -122,7 +123,18 @@
         .patient-item.active { background: rgba(0, 102, 204, 0.1); border: 2px solid var(--primary); }
         .patient-name { font-weight: 600; color: var(--primary); }
         .patient-dni { font-size: 0.75em; color: #95a5a6; margin-top: 3px; }
-        .alert { padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8em; display: none; }
+        .alert { 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin: 0 15px 10px 15px; 
+            font-size: 0.8em; 
+            display: none; 
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
         .alert.show { display: block; }
         .alert-success { background: #e8f5e9; border-left: 4px solid var(--success); color: #1b5e20; }
         .alert-error { background: #ffebee; border-left: 4px solid var(--danger); color: #b71c1c; }
@@ -132,9 +144,54 @@
         .stat-value { color: var(--primary); font-weight: 700; }
         .empty-state { text-align: center; padding: 30px; color: #95a5a6; }
         .empty-icon { font-size: 2.5em; margin-bottom: 10px; }
-        .cuadrante-title { font-size: 0.9em; font-weight: 700; color: white; background: var(--primary); padding: 8px; margin: 10px 0 8px 0; border-radius: 4px; }
+        .cuadrante-title { font-size: 0.85em; font-weight: 700; color: white; background: var(--primary); padding: 6px 8px; margin: 10px 0 6px 0; border-radius: 4px; }
         .three-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .three-inputs input { padding: 6px; font-size: 0.8em; }
+        .mode-buttons { display: flex; gap: 6px; margin-bottom: 12px; }
+        .mode-btn {
+            flex: 1;
+            padding: 6px 8px;
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--gray-medium);
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-color: var(--primary);
+        }
+        .mic-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            font-size: 1.8em;
+            cursor: pointer;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        .mic-button.listening {
+            background: linear-gradient(135deg, var(--accent) 0%, #ff5722 100%);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 4px rgba(255, 107, 53, 0.2);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 4px rgba(255, 107, 53, 0.2); }
+            50% { box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3), 0 0 0 8px rgba(255, 107, 53, 0.1); }
+        }
+        .voice-box { text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px; }
+        .voice-status { font-size: 0.8em; color: #95a5a6; margin-bottom: 8px; }
+        .voice-transcript { background: white; padding: 8px; border-radius: 6px; min-height: 30px; word-wrap: break-word; font-size: 0.85em; margin-bottom: 8px; }
+        .menu-toggle { display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; font-size: 1.3em; z-index: 99; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -176,62 +233,82 @@
                     <div class="section">
                         <div class="section-title">🦷 PIEZAS FDI</div>
                         
-                        <div>
-                            <div class="cuadrante-title">Cuadrante 1 - Superior Izquierdo (11-18)</div>
-                            <div class="teeth-grid">
-                                <button class="tooth-btn" onclick="selectTooth(18)">18</button>
-                                <button class="tooth-btn" onclick="selectTooth(17)">17</button>
-                                <button class="tooth-btn" onclick="selectTooth(16)">16</button>
-                                <button class="tooth-btn" onclick="selectTooth(15)">15</button>
-                                <button class="tooth-btn" onclick="selectTooth(14)">14</button>
-                                <button class="tooth-btn" onclick="selectTooth(13)">13</button>
-                                <button class="tooth-btn" onclick="selectTooth(12)">12</button>
-                                <button class="tooth-btn" onclick="selectTooth(11)">11</button>
-                            </div>
-
-                            <div class="cuadrante-title">Cuadrante 2 - Superior Derecho (21-28)</div>
-                            <div class="teeth-grid">
-                                <button class="tooth-btn" onclick="selectTooth(21)">21</button>
-                                <button class="tooth-btn" onclick="selectTooth(22)">22</button>
-                                <button class="tooth-btn" onclick="selectTooth(23)">23</button>
-                                <button class="tooth-btn" onclick="selectTooth(24)">24</button>
-                                <button class="tooth-btn" onclick="selectTooth(25)">25</button>
-                                <button class="tooth-btn" onclick="selectTooth(26)">26</button>
-                                <button class="tooth-btn" onclick="selectTooth(27)">27</button>
-                                <button class="tooth-btn" onclick="selectTooth(28)">28</button>
-                            </div>
-
-                            <div class="cuadrante-title">Cuadrante 3 - Inferior Derecho (31-38)</div>
-                            <div class="teeth-grid">
-                                <button class="tooth-btn" onclick="selectTooth(31)">31</button>
-                                <button class="tooth-btn" onclick="selectTooth(32)">32</button>
-                                <button class="tooth-btn" onclick="selectTooth(33)">33</button>
-                                <button class="tooth-btn" onclick="selectTooth(34)">34</button>
-                                <button class="tooth-btn" onclick="selectTooth(35)">35</button>
-                                <button class="tooth-btn" onclick="selectTooth(36)">36</button>
-                                <button class="tooth-btn" onclick="selectTooth(37)">37</button>
-                                <button class="tooth-btn" onclick="selectTooth(38)">38</button>
-                            </div>
-
-                            <div class="cuadrante-title">Cuadrante 4 - Inferior Izquierdo (41-48)</div>
-                            <div class="teeth-grid">
-                                <button class="tooth-btn" onclick="selectTooth(48)">48</button>
-                                <button class="tooth-btn" onclick="selectTooth(47)">47</button>
-                                <button class="tooth-btn" onclick="selectTooth(46)">46</button>
-                                <button class="tooth-btn" onclick="selectTooth(45)">45</button>
-                                <button class="tooth-btn" onclick="selectTooth(44)">44</button>
-                                <button class="tooth-btn" onclick="selectTooth(43)">43</button>
-                                <button class="tooth-btn" onclick="selectTooth(42)">42</button>
-                                <button class="tooth-btn" onclick="selectTooth(41)">41</button>
-                            </div>
+                        <div class="cuadrante-title">Cuadrante 1 - Sup. Izq. (11-18)</div>
+                        <div class="teeth-grid">
+                            <button class="tooth-btn" onclick="selectTooth(18)">18</button>
+                            <button class="tooth-btn" onclick="selectTooth(17)">17</button>
+                            <button class="tooth-btn" onclick="selectTooth(16)">16</button>
+                            <button class="tooth-btn" onclick="selectTooth(15)">15</button>
+                            <button class="tooth-btn" onclick="selectTooth(14)">14</button>
+                            <button class="tooth-btn" onclick="selectTooth(13)">13</button>
+                            <button class="tooth-btn" onclick="selectTooth(12)">12</button>
+                            <button class="tooth-btn" onclick="selectTooth(11)">11</button>
                         </div>
+
+                        <div class="cuadrante-title">Cuadrante 2 - Sup. Der. (21-28)</div>
+                        <div class="teeth-grid">
+                            <button class="tooth-btn" onclick="selectTooth(21)">21</button>
+                            <button class="tooth-btn" onclick="selectTooth(22)">22</button>
+                            <button class="tooth-btn" onclick="selectTooth(23)">23</button>
+                            <button class="tooth-btn" onclick="selectTooth(24)">24</button>
+                            <button class="tooth-btn" onclick="selectTooth(25)">25</button>
+                            <button class="tooth-btn" onclick="selectTooth(26)">26</button>
+                            <button class="tooth-btn" onclick="selectTooth(27)">27</button>
+                            <button class="tooth-btn" onclick="selectTooth(28)">28</button>
+                        </div>
+
+                        <div class="cuadrante-title">Cuadrante 3 - Inf. Der. (31-38)</div>
+                        <div class="teeth-grid">
+                            <button class="tooth-btn" onclick="selectTooth(31)">31</button>
+                            <button class="tooth-btn" onclick="selectTooth(32)">32</button>
+                            <button class="tooth-btn" onclick="selectTooth(33)">33</button>
+                            <button class="tooth-btn" onclick="selectTooth(34)">34</button>
+                            <button class="tooth-btn" onclick="selectTooth(35)">35</button>
+                            <button class="tooth-btn" onclick="selectTooth(36)">36</button>
+                            <button class="tooth-btn" onclick="selectTooth(37)">37</button>
+                            <button class="tooth-btn" onclick="selectTooth(38)">38</button>
+                        </div>
+
+                        <div class="cuadrante-title">Cuadrante 4 - Inf. Izq. (41-48)</div>
+                        <div class="teeth-grid">
+                            <button class="tooth-btn" onclick="selectTooth(48)">48</button>
+                            <button class="tooth-btn" onclick="selectTooth(47)">47</button>
+                            <button class="tooth-btn" onclick="selectTooth(46)">46</button>
+                            <button class="tooth-btn" onclick="selectTooth(45)">45</button>
+                            <button class="tooth-btn" onclick="selectTooth(44)">44</button>
+                            <button class="tooth-btn" onclick="selectTooth(43)">43</button>
+                            <button class="tooth-btn" onclick="selectTooth(42)">42</button>
+                            <button class="tooth-btn" onclick="selectTooth(41)">41</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">📝 Modo de Entrada</div>
+                        <div class="mode-buttons">
+                            <button class="mode-btn active" onclick="switchMode('voice', event)">🎤</button>
+                            <button class="mode-btn" onclick="switchMode('text', event)">⌨️</button>
+                            <button class="mode-btn" onclick="switchMode('form', event)">📋</button>
+                        </div>
+                    </div>
+
+                    <div id="voiceMode" class="section">
+                        <div class="voice-box">
+                            <button class="mic-button" id="micButton" onclick="toggleVoice()">🎤</button>
+                            <div class="voice-status" id="voiceStatus">Presiona para hablar</div>
+                            <div class="voice-transcript" id="voiceTranscript"></div>
+                        </div>
+                    </div>
+
+                    <div id="textMode" class="section" style="display: none;">
+                        <textarea id="textInput" placeholder='Ej: "Pieza 18, profundidad 3 4 2, sangrado sí"' style="min-height: 80px;"></textarea>
+                        <button class="btn-primary" onclick="processText()" style="margin-top: 8px;">Procesar</button>
                     </div>
 
                     <div class="section" id="dataSection" style="display: none;">
                         <div class="section-title" id="selectedToothTitle">Pieza #</div>
 
                         <div class="form-group">
-                            <label>Margen Gingival (Proximal, Medio, Distal)</label>
+                            <label>Margen Gingival (Prox/Medio/Distal)</label>
                             <div class="three-inputs">
                                 <input type="number" id="gingivialProximal" placeholder="Prox" step="0.1">
                                 <input type="number" id="gingivialMedio" placeholder="Medio" step="0.1">
@@ -240,7 +317,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Profundidad de Sondaje (Proximal, Medio, Distal)</label>
+                            <label>Profundidad de Sondaje (Prox/Medio/Distal)</label>
                             <div class="three-inputs">
                                 <input type="number" id="probeProximal" placeholder="Prox" step="0.1">
                                 <input type="number" id="probeMedio" placeholder="Medio" step="0.1">
@@ -249,7 +326,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Nivel de Inserción (Proximal, Medio, Distal)</label>
+                            <label>Nivel de Inserción (Prox/Medio/Distal)</label>
                             <div class="three-inputs">
                                 <input type="number" id="attachmentProximal" placeholder="Prox" step="0.1">
                                 <input type="number" id="attachmentMedio" placeholder="Medio" step="0.1">
@@ -319,15 +396,15 @@
                         </div>
 
                         <button class="btn-secondary" onclick="printPatient()" style="margin-bottom: 6px;">🖨️ Imprimir</button>
-                        <button class="btn-secondary" onclick="exportPatientCSV()" style="margin-bottom: 6px;">📄 Exportar</button>
-                        <button class="btn-danger" onclick="deletePatient()">🗑️ Eliminar</button>
+                        <button class="btn-secondary" onclick="exportPatientCSV()" style="margin-bottom: 6px;">📄 Exportar Paciente</button>
+                        <button class="btn-danger" onclick="deletePatient()" style="margin-bottom: 30px;">🗑️ Eliminar Paciente</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; font-size: 1.3em; z-index: 99; display: none; align-items: center; justify-content: center;">☰</button>
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
     <div id="alertSuccess" class="alert alert-success"></div>
     <div id="alertError" class="alert alert-error"></div>
 
@@ -339,6 +416,8 @@
         let patients = JSON.parse(localStorage.getItem('patients')) || [];
         let currentPatientId = null;
         let selectedTooth = null;
+        let voiceRec = null;
+        let isListening = false;
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -348,7 +427,7 @@
             const el = type === 'success' ? document.getElementById('alertSuccess') : document.getElementById('alertError');
             el.textContent = msg;
             el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 2000);
+            setTimeout(() => el.classList.remove('show'), 2500);
         }
 
         // PACIENTES
@@ -365,16 +444,12 @@
 
             const patient = {
                 id: Date.now().toString(),
-                name,
-                lastName,
-                birthdate,
-                dni,
+                name, lastName, birthdate, dni,
                 teeth: {}
             };
 
             for (let i = 11; i <= 48; i++) {
-                const quad = Math.floor(i / 10);
-                if (quad >= 1 && quad <= 4 && i % 10 <= 8) {
+                if (Math.floor(i/10) >= 1 && Math.floor(i/10) <= 4 && i % 10 <= 8 && i % 10 >= 1) {
                     patient.teeth[i] = {
                         gingivialProximal: '', gingivialMedio: '', gingivialDistal: '',
                         probeProximal: '', probeMedio: '', probeDistal: '',
@@ -437,7 +512,6 @@
             const patient = patients.find(p => p.id === currentPatientId);
             if (!patient) return;
 
-            // Actualizar botones
             document.querySelectorAll('.tooth-btn').forEach(btn => {
                 btn.classList.remove('active', 'filled');
                 const toothNum = parseInt(btn.textContent);
@@ -518,6 +592,184 @@
             document.getElementById('plaquePercent').textContent = `${Math.round((plaque/32)*100)}%`;
         }
 
+        // MODOS
+        function switchMode(mode, evt) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            if (evt && evt.target) evt.target.classList.add('active');
+            
+            document.getElementById('voiceMode').style.display = mode === 'voice' ? 'block' : 'none';
+            document.getElementById('textMode').style.display = mode === 'text' ? 'block' : 'none';
+        }
+
+        // VOZ
+        function initVoice() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                showAlert('Voz no soportada', 'error');
+                return false;
+            }
+
+            voiceRec = new SR();
+            voiceRec.lang = 'es-ES';
+            voiceRec.continuous = true;
+            voiceRec.interimResults = true;
+
+            voiceRec.onstart = () => {
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                document.getElementById('voiceStatus').textContent = '🔴 Escuchando...';
+            };
+
+            voiceRec.onresult = (e) => {
+                let final = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+                }
+                if (final.trim()) {
+                    document.getElementById('voiceTranscript').textContent = final;
+                    processVoice(final.trim());
+                }
+            };
+
+            voiceRec.onerror = (e) => {
+                if (e.error !== 'no-speech') {
+                    document.getElementById('voiceStatus').textContent = '❌ ' + e.error;
+                }
+            };
+
+            voiceRec.onend = () => {
+                if (isListening) {
+                    try { voiceRec.start(); } catch (err) {}
+                }
+            };
+
+            return true;
+        }
+
+        function toggleVoice() {
+            if (!voiceRec && !initVoice()) return;
+            
+            try {
+                if (isListening) {
+                    isListening = false;
+                    voiceRec.stop();
+                    document.getElementById('micButton').classList.remove('listening');
+                    document.getElementById('voiceStatus').textContent = 'Presiona para hablar';
+                } else {
+                    document.getElementById('voiceTranscript').textContent = '';
+                    voiceRec.start();
+                }
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        }
+
+        function processVoice(text) {
+            const data = parseCommand(text);
+            if (data && data.toothNumber) {
+                applyData(data);
+            }
+        }
+
+        function processText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                showAlert('Escribe algo', 'error');
+                return;
+            }
+            const data = parseCommand(text);
+            if (data && data.toothNumber) {
+                applyData(data);
+            } else {
+                showAlert('Formato: "Pieza 18, profundidad 3"', 'error');
+            }
+        }
+
+        function parseCommand(text) {
+            const lower = text.toLowerCase();
+            const toothMatch = text.match(/\b(1[1-8]|2[1-8]|3[1-8]|4[1-8])\b/);
+            if (!toothMatch) return null;
+
+            const tooth = parseInt(toothMatch[1]);
+            const result = { toothNumber: tooth };
+
+            // Profundidad con 3 valores
+            let m = lower.match(/profundidad\s*[:=]?\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)|prof\s*[:=]?\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)/);
+            if (m) {
+                result.probeProximal = m[1] || m[4];
+                result.probeMedio = m[2] || m[5];
+                result.probeDistal = m[3] || m[6];
+            }
+
+            // Margen con 3 valores
+            m = lower.match(/margen\s*[:=]?\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)/);
+            if (m) {
+                result.gingivialProximal = m[1];
+                result.gingivialMedio = m[2];
+                result.gingivialDistal = m[3];
+            }
+
+            // Inserción con 3 valores
+            m = lower.match(/inserc(?:ión)?\s*[:=]?\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)/);
+            if (m) {
+                result.attachmentProximal = m[1];
+                result.attachmentMedio = m[2];
+                result.attachmentDistal = m[3];
+            }
+
+            // Sangrado
+            m = lower.match(/sangrado\s*[:=]?\s*(sí|si|yes|no)/);
+            if (m) result.bleeding = /sí|si|yes/.test(m[1]) ? '1' : '0';
+
+            // Placa
+            m = lower.match(/placa\s*[:=]?\s*(sí|si|yes|no)/);
+            if (m) result.plaque = /sí|si|yes/.test(m[1]) ? '1' : '0';
+
+            // Furcación
+            m = lower.match(/furcaci(?:ón)?\s*[:=]?\s*(i{1,3})/i);
+            if (m) result.furcation = m[1].toUpperCase();
+
+            // Movilidad
+            m = lower.match(/movilidad\s*[:=]?\s*(sí|si|yes|no)/);
+            if (m) result.mobility = /sí|si|yes/.test(m[1]) ? '1' : '0';
+
+            // Implante
+            m = lower.match(/implante\s*[:=]?\s*(sí|si|yes|no)/);
+            if (m) result.implant = /sí|si|yes/.test(m[1]) ? '1' : '0';
+
+            return result;
+        }
+
+        function applyData(data) {
+            const patient = patients.find(p => p.id === currentPatientId);
+            if (!patient || !patient.teeth[data.toothNumber]) {
+                showAlert(`Pieza ${data.toothNumber} no válida`, 'error');
+                return;
+            }
+
+            const tooth = patient.teeth[data.toothNumber];
+            
+            // Actualizar solo los campos que vienen
+            if (data.gingivialProximal !== undefined) tooth.gingivialProximal = data.gingivialProximal;
+            if (data.gingivialMedio !== undefined) tooth.gingivialMedio = data.gingivialMedio;
+            if (data.gingivialDistal !== undefined) tooth.gingivialDistal = data.gingivialDistal;
+            if (data.probeProximal !== undefined) tooth.probeProximal = data.probeProximal;
+            if (data.probeMedio !== undefined) tooth.probeMedio = data.probeMedio;
+            if (data.probeDistal !== undefined) tooth.probeDistal = data.probeDistal;
+            if (data.attachmentProximal !== undefined) tooth.attachmentProximal = data.attachmentProximal;
+            if (data.attachmentMedio !== undefined) tooth.attachmentMedio = data.attachmentMedio;
+            if (data.attachmentDistal !== undefined) tooth.attachmentDistal = data.attachmentDistal;
+            if (data.bleeding !== undefined) tooth.bleeding = data.bleeding;
+            if (data.plaque !== undefined) tooth.plaque = data.plaque;
+            if (data.furcation !== undefined) tooth.furcation = data.furcation;
+            if (data.mobility !== undefined) tooth.mobility = data.mobility;
+            if (data.implant !== undefined) tooth.implant = data.implant;
+
+            localStorage.setItem('patients', JSON.stringify(patients));
+            selectTooth(data.toothNumber);
+            showAlert(`Pieza ${data.toothNumber} actualizada ✓`, 'success');
+        }
+
         // IMPRIMIR
         function printPatient() {
             const patient = patients.find(p => p.id === currentPatientId);
@@ -529,41 +781,40 @@
                 <p><strong>DNI:</strong> ${patient.dni}</p>
                 <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>`;
 
-            // Por cuadrantes
             const cuadrantes = [
-                { num: 1, nombre: 'Superior Izquierdo', piezas: [18,17,16,15,14,13,12,11] },
-                { num: 2, nombre: 'Superior Derecho', piezas: [21,22,23,24,25,26,27,28] },
-                { num: 3, nombre: 'Inferior Derecho', piezas: [31,32,33,34,35,36,37,38] },
-                { num: 4, nombre: 'Inferior Izquierdo', piezas: [41,42,43,44,45,46,47,48] }
+                { num: 1, nombre: 'Sup. Izq.', piezas: [18,17,16,15,14,13,12,11] },
+                { num: 2, nombre: 'Sup. Der.', piezas: [21,22,23,24,25,26,27,28] },
+                { num: 3, nombre: 'Inf. Der.', piezas: [31,32,33,34,35,36,37,38] },
+                { num: 4, nombre: 'Inf. Izq.', piezas: [41,42,43,44,45,46,47,48] }
             ];
 
             cuadrantes.forEach(quad => {
-                html += `<h3 style="color: white; background: #0066cc; padding: 8px; margin: 10px 0 5px 0;">Cuadrante ${quad.num} - ${quad.nombre}</h3>
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                html += `<h3 style="color: white; background: #0066cc; padding: 6px; margin: 10px 0 5px 0; font-size: 11px;">Cuadrante ${quad.num} - ${quad.nombre}</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
                 <thead><tr style="background: #0066cc; color: white;">
-                <th style="border: 1px solid #000; padding: 6px;">Pieza</th>
-                <th style="border: 1px solid #000; padding: 6px;">Margen</th>
-                <th style="border: 1px solid #000; padding: 6px;">Prof.</th>
-                <th style="border: 1px solid #000; padding: 6px;">Inserc.</th>
-                <th style="border: 1px solid #000; padding: 6px;">Sang</th>
-                <th style="border: 1px solid #000; padding: 6px;">Placa</th>
-                <th style="border: 1px solid #000; padding: 6px;">Furc.</th>
-                <th style="border: 1px solid #000; padding: 6px;">Movil</th>
-                <th style="border: 1px solid #000; padding: 6px;">Impl.</th>
+                <th style="border: 1px solid #000; padding: 4px;">Pza</th>
+                <th style="border: 1px solid #000; padding: 4px;">Margen P/M/D</th>
+                <th style="border: 1px solid #000; padding: 4px;">Prof P/M/D</th>
+                <th style="border: 1px solid #000; padding: 4px;">Inserc P/M/D</th>
+                <th style="border: 1px solid #000; padding: 4px;">Sang</th>
+                <th style="border: 1px solid #000; padding: 4px;">Pl</th>
+                <th style="border: 1px solid #000; padding: 4px;">Furc</th>
+                <th style="border: 1px solid #000; padding: 4px;">Mov</th>
+                <th style="border: 1px solid #000; padding: 4px;">Impl</th>
                 </tr></thead><tbody>`;
 
                 quad.piezas.forEach(num => {
                     const tooth = patient.teeth[num];
                     if (tooth && Object.values(tooth).some(v => v !== '')) {
-                        html += `<tr style="background: #f5f5f5;"><td style="border: 1px solid #000; padding: 6px;"><strong>${num}</strong></td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.gingivialProximal||'-'}/${tooth.gingivialMedio||'-'}/${tooth.gingivialDistal||'-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.probeProximal||'-'}/${tooth.probeMedio||'-'}/${tooth.probeDistal||'-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.attachmentProximal||'-'}/${tooth.attachmentMedio||'-'}/${tooth.attachmentDistal||'-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.bleeding === '1' ? 'Sí' : '-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.plaque === '1' ? 'Sí' : '-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.furcation || '-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.mobility === '1' ? 'Sí' : '-'}</td>
-                        <td style="border: 1px solid #000; padding: 6px;">${tooth.implant === '1' ? 'Sí' : '-'}</td></tr>`;
+                        html += `<tr><td style="border: 1px solid #000; padding: 4px;"><strong>${num}</strong></td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.gingivialProximal||'-'}/${tooth.gingivialMedio||'-'}/${tooth.gingivialDistal||'-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.probeProximal||'-'}/${tooth.probeMedio||'-'}/${tooth.probeDistal||'-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.attachmentProximal||'-'}/${tooth.attachmentMedio||'-'}/${tooth.attachmentDistal||'-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.bleeding === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.plaque === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.furcation || '-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.mobility === '1' ? 'Sí' : '-'}</td>
+                        <td style="border: 1px solid #000; padding: 4px;">${tooth.implant === '1' ? 'Sí' : '-'}</td></tr>`;
                     }
                 });
                 html += '</tbody></table>';
@@ -590,20 +841,13 @@
             const patient = patients.find(p => p.id === currentPatientId);
             if (!patient) return;
 
-            let csv = `PERIODONTOGRAMA\nPaciente,${patient.lastName}, ${patient.name}\nDNI,${patient.dni}\n\nPieza,Margen (P/M/D),Prof (P/M/D),Inserc (P/M/D),Sangrado,Placa,Furcación,Movilidad,Implante\n`;
+            let csv = `PERIODONTOGRAMA\nPaciente,${patient.lastName} ${patient.name}\nDNI,${patient.dni}\n\nPieza,Margen P/M/D,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcación,Movilidad,Implante\n`;
 
-            const allTeeth = [...Array(32).keys()].map((_, i) => {
-                const quad = Math.floor((i + 11) / 10);
-                const num = (i + 11) % 10 === 0 ? i + 11 + 7 : i + 11;
-                return num;
-            }).filter(n => patient.teeth[n]);
-
-            allTeeth.forEach(num => {
-                const tooth = patient.teeth[num];
+            Object.entries(patient.teeth).forEach(([num, tooth]) => {
                 if (Object.values(tooth).some(v => v !== '')) {
-                    csv += `${num},${tooth.gingivialProximal||''} ${tooth.gingivialMedio||''} ${tooth.gingivialDistal||''},`;
-                    csv += `${tooth.probeProximal||''} ${tooth.probeMedio||''} ${tooth.probeDistal||''},`;
-                    csv += `${tooth.attachmentProximal||''} ${tooth.attachmentMedio||''} ${tooth.attachmentDistal||''},`;
+                    csv += `${num},${tooth.gingivialProximal||''}/${tooth.gingivialMedio||''}/${tooth.gingivialDistal||''},`;
+                    csv += `${tooth.probeProximal||''}/${tooth.probeMedio||''}/${tooth.probeDistal||''},`;
+                    csv += `${tooth.attachmentProximal||''}/${tooth.attachmentMedio||''}/${tooth.attachmentDistal||''},`;
                     csv += `${tooth.bleeding === '1' ? 'Sí' : 'No'},${tooth.plaque === '1' ? 'Sí' : 'No'},`;
                     csv += `${tooth.furcation || '-'},${tooth.mobility === '1' ? 'Sí' : 'No'},${tooth.implant === '1' ? 'Sí' : 'No'}\n`;
                 }
@@ -631,13 +875,13 @@
 
             patients.forEach(patient => {
                 csv += `===== ${patient.lastName}, ${patient.name} (DNI: ${patient.dni}) =====\n`;
-                csv += 'Pieza,Margen (P/M/D),Prof (P/M/D),Inserc (P/M/D),Sangrado,Placa,Furcación,Movilidad,Implante\n';
+                csv += 'Pieza,Margen P/M/D,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcación,Movilidad,Implante\n';
 
                 Object.entries(patient.teeth).forEach(([num, tooth]) => {
                     if (Object.values(tooth).some(v => v !== '')) {
-                        csv += `${num},${tooth.gingivialProximal||''} ${tooth.gingivialMedio||''} ${tooth.gingivialDistal||''},`;
-                        csv += `${tooth.probeProximal||''} ${tooth.probeMedio||''} ${tooth.probeDistal||''},`;
-                        csv += `${tooth.attachmentProximal||''} ${tooth.attachmentMedio||''} ${tooth.attachmentDistal||''},`;
+                        csv += `${num},${tooth.gingivialProximal||''}/${tooth.gingivialMedio||''}/${tooth.gingivialDistal||''},`;
+                        csv += `${tooth.probeProximal||''}/${tooth.probeMedio||''}/${tooth.probeDistal||''},`;
+                        csv += `${tooth.attachmentProximal||''}/${tooth.attachmentMedio||''}/${tooth.attachmentDistal||''},`;
                         csv += `${tooth.bleeding === '1' ? 'Sí' : 'No'},${tooth.plaque === '1' ? 'Sí' : 'No'},`;
                         csv += `${tooth.furcation || '-'},${tooth.mobility === '1' ? 'Sí' : 'No'},${tooth.implant === '1' ? 'Sí' : 'No'}\n`;
                     }
@@ -683,14 +927,11 @@
                             if (match) {
                                 currentPatient = {
                                     id: Date.now().toString() + Math.random(),
-                                    lastName: match[1],
-                                    name: match[2],
-                                    dni: match[3],
-                                    birthdate: '',
-                                    teeth: {}
+                                    lastName: match[1], name: match[2], dni: match[3],
+                                    birthdate: '', teeth: {}
                                 };
                                 for (let j = 11; j <= 48; j++) {
-                                    if (Math.floor(j/10) >= 1 && Math.floor(j/10) <= 4 && j % 10 <= 8) {
+                                    if (Math.floor(j/10) >= 1 && Math.floor(j/10) <= 4 && j % 10 <= 8 && j % 10 >= 1) {
                                         currentPatient.teeth[j] = {
                                             gingivialProximal: '', gingivialMedio: '', gingivialDistal: '',
                                             probeProximal: '', probeMedio: '', probeDistal: '',
@@ -748,14 +989,5 @@
             renderPatients();
         });
     </script>
-
-    <div id="installPrompt" class="install-prompt" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000;">
-        <h3 style="color: var(--primary); margin-bottom: 8px; font-size: 0.9em;">📱 Instalar PerioDental</h3>
-        <p style="color: #95a5a6; font-size: 0.8em; margin-bottom: 8px;">Usa como app nativa</p>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn-secondary" onclick="document.getElementById('installPrompt').style.display='none'" style="flex: 1; margin: 0; padding: 8px; font-size: 0.8em;">Luego</button>
-            <button class="btn-primary" style="flex: 1; margin: 0; padding: 8px; font-size: 0.8em;">Instalar</button>
-        </div>
-    </div>
 </body>
 </html>
