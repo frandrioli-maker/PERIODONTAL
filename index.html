@@ -567,7 +567,7 @@
                         <div style="margin-top: 10px; font-size: 0.8em; color: #7f8c8d;">
                             <strong>Formato:</strong> Pieza [número], [campo] [valor], ...<br>
                             <strong>Campos:</strong> profundidad, inserción, sangrado, placa, furcación, movilidad, implante<br>
-                            <strong>Modo Precisión:</strong> Agregá "modo precision" antes de los valores numéricos para ingresar valores ≥10 o decimales
+                            <strong>Modo Precisión:</strong> Agregá "modo precision" antes de los valores numéricos para ingresar valores de 2 cifras (10-20)
                         </div>
                     </div>
 
@@ -578,25 +578,25 @@
                             <span class="precision-badge" id="precisionBadge">🔬 Modo Precisión Activo</span>
                         </div>
                         <div class="precision-hint" id="precisionHint">
-                            <strong>💡 Modo Precisión activo:</strong> Los valores numéricos se interpretan literalmente (ej: "diez" = 10, "punto cinco" = 0.5). 
-                            Se desactiva automáticamente al cambiar de pieza. Decí <strong>"modo normal"</strong> para salir manualmente.
+                            <strong>💡 Modo Precisión activo:</strong> Los valores numéricos se interpretan literalmente (ej: "diez" = 10, "quince" = 15). 
+                            Solo enteros, sin decimales. Se desactiva automáticamente al cambiar de pieza. Decí <strong>"modo normal"</strong> para salir manualmente.
                         </div>
 
                         <div class="form-group">
-                            <label>🩸 Profundidad de Sondaje (mm) - Proximal / Medio / Distal</label>
+                            <label>🩸 Profundidad de Sondaje (mm) - Mesial / Medio / Distal</label>
                             <div class="three-inputs">
-                                <input type="number" id="probeProximal" placeholder="P" step="0.1" min="0" max="20" onchange="autoSave()">
-                                <input type="number" id="probeMedio" placeholder="M" step="0.1" min="0" max="20" onchange="autoSave()">
-                                <input type="number" id="probeDistal" placeholder="D" step="0.1" min="0" max="20" onchange="autoSave()">
+                                <input type="number" id="probeProximal" placeholder="M" step="1" min="0" max="20" onchange="autoSave()">
+                                <input type="number" id="probeMedio" placeholder="Me" step="1" min="0" max="20" onchange="autoSave()">
+                                <input type="number" id="probeDistal" placeholder="D" step="1" min="0" max="20" onchange="autoSave()">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>🔩 Nivel de Inserción (mm) - Proximal / Medio / Distal</label>
+                            <label>🔩 Nivel de Inserción (mm) - Mesial / Medio / Distal</label>
                             <div class="three-inputs">
-                                <input type="number" id="attachmentProximal" placeholder="P" step="0.1" min="0" max="20" onchange="autoSave()">
-                                <input type="number" id="attachmentMedio" placeholder="M" step="0.1" min="0" max="20" onchange="autoSave()">
-                                <input type="number" id="attachmentDistal" placeholder="D" step="0.1" min="0" max="20" onchange="autoSave()">
+                                <input type="number" id="attachmentProximal" placeholder="M" step="1" min="0" max="20" onchange="autoSave()">
+                                <input type="number" id="attachmentMedio" placeholder="Me" step="1" min="0" max="20" onchange="autoSave()">
+                                <input type="number" id="attachmentDistal" placeholder="D" step="1" min="0" max="20" onchange="autoSave()">
                             </div>
                         </div>
 
@@ -618,17 +618,17 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>🔍 Furcación (I-IV)</label>
+                                <label>🔍 Furcación</label>
                                 <select id="furcation" onchange="autoSave()">
                                     <option value="">- Seleccionar -</option>
-                                    <option value="I">I - Inicial</option>
-                                    <option value="II">II - Moderada</option>
-                                    <option value="III">III - Severa</option>
-                                    <option value="IV">IV - A través</option>
+                                    <option value="I">I - Incipiente</option>
+                                    <option value="II">II - Cul-de-sac</option>
+                                    <option value="III">III - A través</option>
+                                    <option value="IV">IV - A.T. Expuesta</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>🦷 Movilidad (I-III)</label>
+                                <label>🦷 Movilidad</label>
                                 <select id="mobility" onchange="autoSave()">
                                     <option value="">- Seleccionar -</option>
                                     <option value="I">I - Leve</option>
@@ -756,7 +756,7 @@ function setPrecisionMode(active) {
     precisionMode = active;
     updatePrecisionUI();
     if (active) {
-        showAlert('🔬 Modo Precisión activado. Valores numéricos literales.', 'warning');
+        showAlert('🔬 Modo Precisión activado. Valores enteros literales (10-20).', 'warning');
         speak('Modo precisión activado');
     } else {
         showAlert('Modo normal. Dictado de 3 cifras.', 'success');
@@ -1187,10 +1187,7 @@ var NUMBER_WORDS = {
     'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
     'once': 11, 'doce': 12, 'trece': 13, 'catorce': 14, 'quince': 15,
     'dieciseis': 16, 'diecisiete': 17, 'dieciocho': 18,
-    'diecinueve': 19, 'veinte': 20, 'veintiuno': 21, 'veintidos': 22,
-    'veintitres': 23, 'veinticuatro': 24, 'veinticinco': 25,
-    'veintiseis': 26, 'veintisiete': 27, 'veintiocho': 28,
-    'veintinueve': 29, 'treinta': 30, 'treintauno': 31, 'treintados': 32
+    'diecinueve': 19, 'veinte': 20
 };
 
 function parseNumberWord(text) {
@@ -1206,53 +1203,48 @@ function normalizeText(text) {
         .replace(/[\u0300-\u036f]/g, '');
 }
 
+// ==================== EXTRACT THREE NUMBERS ====================
+// MODO NORMAL: separación automática de dígitos para números de 2-3 cifras
+// MODO PRECISION: valores literales enteros 10-20, separados por cualquier delimitador
+
 function extractThreeNumbers(str, usePrecision) {
     var trimmed = str.trim();
 
+    // === MODO PRECISION: enteros literales 10-20 ===
     if (usePrecision) {
-        var tokens = trimmed.split(/[\s,]+/).filter(function(t) { return t.length > 0; });
+        // Normalizar separadores: comas, puntos, guiones, barras → espacios
+        // También palabras separadoras comunes que dicta el usuario
+        var normalized = trimmed
+            .replace(/[,\.\-\/\\]/g, ' ')
+            .replace(/\b(y|e|siguiente|luego|otro|mas)\b/g, ' ');
+        
+        var tokens = normalized.split(/\s+/).filter(function(t) { return t.length > 0; });
         var result = [];
-        var currentNum = '';
-
+        
         for (var i = 0; i < tokens.length; i++) {
-            var token = tokens[i].toLowerCase().replace(/[,\-]/g, '');
-
-            if (token === 'punto' || token === 'coma' || token === 'decimal') {
-                currentNum += '.';
-                continue;
-            }
-
+            var token = tokens[i];
             var val = parseNumberWord(token);
-            if (val !== null) {
-                currentNum += String(val);
-            } else if (/^\d+\.?\d*$/.test(token)) {
-                currentNum += token;
-            } else if (token === 'y' || token === 'e') {
-                if (currentNum) {
-                    var parsed = parseFloat(currentNum);
-                    if (!isNaN(parsed)) result.push(parsed);
-                    currentNum = '';
-                }
-            } else {
-                if (currentNum) {
-                    var parsed = parseFloat(currentNum);
-                    if (!isNaN(parsed)) result.push(parsed);
-                    currentNum = '';
-                }
+            
+            // Si es número literal (incluyendo >= 10), lo tomamos
+            if (val !== null && val >= 0 && val <= 20) {
+                result.push(val);
+            } else if (/^\d+$/.test(token)) {
+                // Número escrito en dígitos
+                var num = parseInt(token);
+                if (num >= 0 && num <= 20) result.push(num);
             }
+            // Ignoramos tokens no numéricos (incluyendo "punto", "coma", etc.)
         }
-
-        if (currentNum) {
-            var parsed = parseFloat(currentNum);
-            if (!isNaN(parsed)) result.push(parsed);
-        }
-
+        
         return result.slice(0, 3);
     }
 
+    // === MODO NORMAL (comportamiento original) ===
     var parts = trimmed.split(/[\s\-,]+/).filter(function(v) { return v.length > 0; });
     var nums = parts.map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
 
+    // Caso especial: si tenemos UN SOLO numero entero de 2-3 digitos >= 10,
+    // probablemente la voz unio los valores (ej: "321" -> 3, 2, 1)
     if (nums.length === 1 && parts.length === 1) {
         var single = parts[0];
         var n = parseFloat(single);
@@ -1265,6 +1257,7 @@ function extractThreeNumbers(str, usePrecision) {
         }
     }
 
+    // Validacion: si algun valor individual es >= 10, probablemente esta mal
     var validados = [];
     for (var k = 0; k < nums.length; k++) {
         var v = nums[k];
@@ -1283,14 +1276,12 @@ function extractThreeNumbers(str, usePrecision) {
 }
 
 // ==================== HELPER: DETECTAR GRADO (I, II, III, IV) ====================
-// Usado para FURCACION (I-IV) y MOVILIDAD (I-III)
 function detectarGrado(texto, keywords) {
     for (var k = 0; k < keywords.length; k++) {
         var kw = keywords[k];
         var idx = texto.search(new RegExp('\\b' + kw + '\\b'));
         if (idx === -1) continue;
-        var ventana = texto.substring(idx + kw.length, idx + kw.length + 30);
-        // Buscar romanos o números o palabras en la ventana
+        var ventana = texto.substring(idx + kw.length, idx + kw.length + 35);
         var match = ventana.match(/\b(iv|iii|ii|i|4|3|2|1|cuatro|tres|dos|uno)\b/);
         if (match) {
             var val = match[1];
@@ -1364,6 +1355,7 @@ function processText() {
 function parseCommand(text) {
     var lower = normalizeText(text);
 
+    // === COMANDOS DE MODO PRECISION ===
     if (/\b(modo\s*precision|modo\s*preciso|precision|preciso)\b/.test(lower)) {
         if (/\b(modo\s*normal|normal)\b/.test(lower)) {
             return { action: 'precision_off' };
@@ -1374,10 +1366,12 @@ function parseCommand(text) {
         return { action: 'precision_off' };
     }
 
+    // Comandos de navegacion
     if (/\b(siguiente|next|proximo|proxima)\b/.test(lower)) return { action: 'next' };
     if (/\b(anterior|prev|previo|atras)\b/.test(lower)) return { action: 'prev' };
     if (/\b(corregir|repetir|otra vez)\b/.test(lower)) return { action: 'correct' };
 
+    // Buscar numero de pieza explicito
     var toothNum = null;
     var explicitTooth = false;
 
@@ -1387,10 +1381,12 @@ function parseCommand(text) {
         explicitTooth = true;
     }
 
+    // Si no se menciono pieza explicitamente, usar la pieza actualmente seleccionada
     if (!toothNum && selectedTooth) {
         toothNum = selectedTooth;
     }
 
+    // Validar que sea una pieza valida FDI
     if (!toothNum || toothNum < 11 || toothNum > 48 || toothNum % 10 > 8 || toothNum % 10 === 0) {
         return null;
     }
@@ -1399,7 +1395,7 @@ function parseCommand(text) {
     var _explicitTooth = explicitTooth;
     var usePrecision = precisionMode;
 
-    // PROFUNDIDAD
+    // PROFUNDIDAD DE SONDAJE
     var m = lower.match(/(?:profundidad|prof|sondaje|sondas)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:insercion|inser|sangrado|placa|furcacion|movilidad|implante|biofilm|nivel)\b|$)/);
     if (m) {
         var nums = extractThreeNumbers(m[1], usePrecision);
@@ -1408,7 +1404,7 @@ function parseCommand(text) {
         if (nums.length >= 3) result.probeDistal = nums[2];
     }
 
-    // INSERCION
+    // NIVEL DE INSERCION
     m = lower.match(/(?:insercion|inser|nivel)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:profundidad|prof|sondaje|sangrado|placa|furcacion|movilidad|implante)\b|$)/);
     if (m) {
         var nums = extractThreeNumbers(m[1], usePrecision);
@@ -1417,7 +1413,7 @@ function parseCommand(text) {
         if (nums.length >= 3) result.attachmentDistal = nums[2];
     }
 
-    // Helper si/no para campos binarios
+    // Helper: detecta si/no en campos binarios
     function detectarSiNo(texto, keywords) {
         for (var k = 0; k < keywords.length; k++) {
             var kw = keywords[k];
@@ -1438,8 +1434,8 @@ function parseCommand(text) {
     var placaVal = detectarSiNo(lower, ['placa', 'placas', 'biofilm']);
     if (placaVal !== null) result.plaque = placaVal;
 
-    // FURCACION (I, II, III, IV)
-    var furcVal = detectarGrado(lower, ['furcacion', 'furca', 'furcaciones']);
+    // FURCACION (I, II, III, IV) - incluye "fuerza" por error común de Chrome
+    var furcVal = detectarGrado(lower, ['furcacion', 'furca', 'furcaciones', 'fuerza', 'fuerzas']);
     if (furcVal !== null) result.furcation = furcVal;
 
     // MOVILIDAD (I, II, III)
@@ -1450,6 +1446,7 @@ function parseCommand(text) {
     var implanteVal = detectarSiNo(lower, ['implante', 'implant', 'implantes']);
     if (implanteVal !== null) result.implant = implanteVal;
 
+    // Si la pieza no fue explicita, debe haber al menos UN campo con datos
     if (!_explicitTooth) {
         var keys = Object.keys(result);
         if (keys.length <= 1) return null;
@@ -1533,8 +1530,8 @@ function printPatient() {
 
     var cols = [
         { label: 'Pza',          w: 14 },
-        { label: 'Prof P/M/D',   w: 46 },
-        { label: 'Inserc P/M/D', w: 54 },
+        { label: 'Prof M/Me/D',  w: 46 },
+        { label: 'Inser M/Me/D', w: 54 },
         { label: 'Sang',         w: 20 },
         { label: 'Pl',           w: 14 },
         { label: 'Furc',         w: 20 },
@@ -1660,7 +1657,7 @@ function exportPatientCSV() {
     var patient = getCurrentPatient();
     if (!patient) return;
 
-    var csv = 'PERIODONTOGRAMA\nPaciente,' + patient.lastName + ' ' + patient.name + '\nDNI,' + patient.dni + '\n\nPieza,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcacion,Movilidad,Implante\n';
+    var csv = 'PERIODONTOGRAMA\nPaciente,' + patient.lastName + ' ' + patient.name + '\nDNI,' + patient.dni + '\n\nPieza,Prof M/Me/D,Inserc M/Me/D,Sangrado,Placa,Furcacion,Movilidad,Implante\n';
 
     Object.entries(patient.teeth).forEach(function(entry) {
         var num = entry[0];
@@ -1687,7 +1684,7 @@ function exportAllCSV() {
 
     patients.forEach(function(patient) {
         csv += '===== ' + patient.lastName + ', ' + patient.name + ' (DNI: ' + patient.dni + ') =====\n';
-        csv += 'Pieza,Prof P/M/D,Inserc P/M/D,Sangrado,Placa,Furcacion,Movilidad,Implante\n';
+        csv += 'Pieza,Prof M/Me/D,Inserc M/Me/D,Sangrado,Placa,Furcacion,Movilidad,Implante\n';
 
         Object.entries(patient.teeth).forEach(function(entry) {
             var num = entry[0];
@@ -1807,8 +1804,8 @@ function importCSV(event) {
 function showHelp() {
     var helpText = 'COMANDOS DE VOZ:\n\n' +
         '"Pieza [numero]" - Selecciona diente (queda activo)\n' +
-        '"Profundidad [P] [M] [D]" - Sondaje (ej: 3 4 3)\n' +
-        '"Insercion [P] [M] [D]" - Nivel de insercion\n' +
+        '"Profundidad [M] [Me] [D]" - Sondaje (ej: 3 4 3)\n' +
+        '"Insercion [M] [Me] [D]" - Nivel de insercion\n' +
         '"Sangrado si/no" - BOP positivo/negativo\n' +
         '"Placa si/no" - Presencia de placa\n' +
         '"Furcacion I/II/III/IV" - (o uno/dos/tres/cuatro)\n' +
@@ -1816,10 +1813,10 @@ function showHelp() {
         '"Implante si/no" - Marcar como implante\n' +
         '"Siguiente/Anterior" - Navegar entre piezas\n\n' +
         '--- MODO PRECISION ---\n' +
-        'Cuando necesites valores >=10 o decimales:\n' +
+        'Cuando necesites valores de 2 cifras (10-20):\n' +
         'Di "modo precision" antes de los valores.\n' +
-        'Ej: "Pieza 14, modo precision, profundidad 10 12 punto 5"\n' +
-        'En Modo Precision: "diez"=10, "punto cinco"=0.5\n' +
+        'Ej: "Pieza 14, modo precision, profundidad diez doce quince"\n' +
+        'En Modo Precision: "diez"=10, "quince"=15, "veinte"=20\n' +
         'Se desactiva automaticamente al cambiar de pieza.\n' +
         'Di "modo normal" para salir manualmente.';
     alert(helpText);
