@@ -14,7 +14,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -1389,11 +1389,114 @@ function printPatient() {
     var patient = getCurrentPatient();
     if (!patient) return;
 
-    var html = '<div style="padding: 10px; font-family: Arial; font-size: 10px;">' +
-        '<h1 style="color: #0066cc; text-align: center; margin: 0 0 8px 0; font-size: 18px;">PERIODONTOGRAMA</h1>' +
-        '<p style="margin: 3px 0;"><strong>Paciente:</strong> ' + patient.lastName + ', ' + patient.name + '</p>' +
-        '<p style="margin: 3px 0;"><strong>DNI:</strong> ' + patient.dni + '</p>' +
-        '<p style="margin: 3px 0;"><strong>Fecha:</strong> ' + new Date().toLocaleDateString('es-ES') + '</p>';
+    var { jsPDF } = window.jspdf;
+    var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+    // Dimensiones A4 landscape: 297 x 210 mm
+    var pageW = 297;
+    var pageH = 210;
+    var margin = 12;
+    var contentW = pageW - margin * 2;
+    var y = margin;
+
+    // --- ENCABEZADO ---
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 204);
+    doc.text('PERIODONTOGRAMA', pageW / 2, y + 6, { align: 'center' });
+    y += 12;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Paciente: ' + patient.lastName + ', ' + patient.name, margin, y);
+    y += 5;
+    doc.text('DNI: ' + patient.dni, margin, y);
+    y += 5;
+    doc.text('Fecha: ' + new Date().toLocaleDateString('es-ES'), margin, y);
+    y += 8;
+
+    // --- COLUMNAS ---
+    // Pza | Prof P/M/D | Inserc P/M/D | Sang | Pl | Furc | Mov | Impl
+    var cols = [
+        { label: 'Pza',          w: 14 },
+        { label: 'Prof P/M/D',   w: 46 },
+        { label: 'Inserc P/M/D', w: 54 },
+        { label: 'Sang',         w: 20 },
+        { label: 'Pl',           w: 14 },
+        { label: 'Furc',         w: 20 },
+        { label: 'Mov',          w: 20 },
+        { label: 'Impl',         w: 20 },
+    ];
+    var rowH = 7;
+    var headerH = 8;
+
+    function drawTableHeader(startY) {
+        var x = margin;
+        // Fondo azul header
+        doc.setFillColor(0, 102, 204);
+        doc.rect(margin, startY, contentW, headerH, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(255, 255, 255);
+        cols.forEach(function(col) {
+            doc.text(col.label, x + col.w / 2, startY + 5.5, { align: 'center' });
+            x += col.w;
+        });
+        doc.setTextColor(0, 0, 0);
+        return startY + headerH;
+    }
+
+    function drawRow(startY, values, isOdd) {
+        var x = margin;
+        doc.setFillColor(isOdd ? 248 : 255, isOdd ? 248 : 255, isOdd ? 248 : 255);
+        doc.rect(margin, startY, contentW, rowH, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(0, 0, 0);
+        values.forEach(function(val, i) {
+            var col = cols[i];
+            if (i === 0) {
+                doc.setFont('helvetica', 'bold');
+            } else {
+                doc.setFont('helvetica', 'normal');
+            }
+            doc.text(String(val || '-'), x + col.w / 2, startY + 5, { align: 'center' });
+            x += col.w;
+        });
+        // Bordes de la fila
+        x = margin;
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.2);
+        doc.rect(margin, startY, contentW, rowH, 'S');
+        cols.forEach(function(col) {
+            doc.line(x, startY, x, startY + rowH);
+            x += col.w;
+        });
+    }
+
+    function drawNoData(startY) {
+        doc.setFillColor(248, 248, 248);
+        doc.rect(margin, startY, contentW, rowH, 'F');
+        doc.setDrawColor(180, 180, 180);
+        doc.rect(margin, startY, contentW, rowH, 'S');
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Sin datos cargados', pageW / 2, startY + 5, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
+    }
+
+    function drawQuadrantTitle(startY, text) {
+        doc.setFillColor(0, 102, 204);
+        doc.rect(margin, startY, contentW, 7, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text(text, margin + 4, startY + 5);
+        doc.setTextColor(0, 0, 0);
+        return startY + 7;
+    }
 
     var cuadrantes = [
         { num: 1, nombre: 'Sup. Izq.', piezas: [18,17,16,15,14,13,12,11] },
@@ -1403,60 +1506,49 @@ function printPatient() {
     ];
 
     cuadrantes.forEach(function(quad) {
-        // Cuadrante 3 y 4 fuerzan salto de pagina previa para asegurar que entren completos
-        var pageBreakBefore = quad.num === 3 ? 'page-break-before: always;' : '';
-        html += '<div style="' + pageBreakBefore + ' margin-top: 10px;">' +
-        '<h3 style="color: white; background: #0066cc; padding: 5px 8px; margin: 0 0 4px 0; font-size: 11px;">Cuadrante ' + quad.num + ' - ' + quad.nombre + '</h3>' +
-        '<table style="width: 100%; border-collapse: collapse; font-size: 9px;">' +
-        '<thead><tr style="background: #0066cc; color: white;">' +
-        '<th style="border: 1px solid #000; padding: 3px;">Pza</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Prof P/M/D</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Inserc P/M/D</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Sang</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Pl</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Furc</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Mov</th>' +
-        '<th style="border: 1px solid #000; padding: 3px;">Impl</th>' +
-        '</tr></thead><tbody>';
-
-        var hayDatos = false;
-        quad.piezas.forEach(function(num) {
-            var tooth = patient.teeth[num];
-            if (tooth && hasData(tooth)) {
-                hayDatos = true;
-                html += '<tr><td style="border: 1px solid #000; padding: 3px;"><strong>' + num + '</strong></td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.probeProximal||'-') + '/' + (tooth.probeMedio||'-') + '/' + (tooth.probeDistal||'-') + '</td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.attachmentProximal||'-') + '/' + (tooth.attachmentMedio||'-') + '/' + (tooth.attachmentDistal||'-') + '</td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.bleeding === '1' ? 'Si' : '-') + '</td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.plaque === '1' ? 'Si' : '-') + '</td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.furcation || '-') + '</td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.mobility === '1' ? 'Si' : '-') + '</td>' +
-                '<td style="border: 1px solid #000; padding: 3px;">' + (tooth.implant === '1' ? 'Si' : '-') + '</td></tr>';
-            }
+        // Calcular cuanto espacio ocupa este cuadrante
+        var rows = quad.piezas.filter(function(num) {
+            return patient.teeth[num] && hasData(patient.teeth[num]);
         });
+        var quadH = 7 + headerH + (Math.max(rows.length, 1) * rowH) + 4;
 
-        if (!hayDatos) {
-            html += '<tr><td colspan="8" style="border: 1px solid #000; padding: 6px; text-align: center; color: #999; font-style: italic;">Sin datos cargados</td></tr>';
+        // Si no entra en la pagina actual, nueva pagina
+        if (y + quadH > pageH - margin) {
+            doc.addPage();
+            y = margin;
         }
 
-        html += '</tbody></table></div>';
+        // Titulo del cuadrante
+        y = drawQuadrantTitle(y, 'Cuadrante ' + quad.num + ' - ' + quad.nombre);
+
+        // Header de columnas
+        y = drawTableHeader(y);
+
+        // Filas de datos
+        if (rows.length === 0) {
+            drawNoData(y);
+            y += rowH;
+        } else {
+            rows.forEach(function(num, idx) {
+                var tooth = patient.teeth[num];
+                drawRow(y, [
+                    num,
+                    (tooth.probeProximal||'-') + '/' + (tooth.probeMedio||'-') + '/' + (tooth.probeDistal||'-'),
+                    (tooth.attachmentProximal||'-') + '/' + (tooth.attachmentMedio||'-') + '/' + (tooth.attachmentDistal||'-'),
+                    tooth.bleeding === '1' ? 'Si' : '-',
+                    tooth.plaque === '1' ? 'Si' : '-',
+                    tooth.furcation || '-',
+                    tooth.mobility === '1' ? 'Si' : '-',
+                    tooth.implant === '1' ? 'Si' : '-'
+                ], idx % 2 === 1);
+                y += rowH;
+            });
+        }
+        y += 5; // espacio entre cuadrantes
     });
 
-    html += '</div>';
-
-    var elem = document.createElement('div');
-    elem.innerHTML = html;
-    var opt = {
-        margin: [10, 10, 10, 10],
-        filename: 'Periodontograma_' + patient.dni + '.pdf',
-        image: {type: 'jpeg', quality: 0.98},
-        html2canvas: {scale: 2, backgroundColor: '#fff', useCORS: true},
-        jsPDF: {orientation: 'landscape', unit: 'mm', format: 'a4'},
-        pagebreak: { mode: ['css', 'legacy'] }
-    };
-
-    html2pdf().set(opt).from(elem).save();
-    showAlert('Generando PDF...');
+    doc.save('Periodontograma_' + patient.dni + '.pdf');
+    showAlert('PDF generado ✓');
 }
 
 function exportPatientCSV() {
