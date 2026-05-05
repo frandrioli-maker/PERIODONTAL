@@ -357,7 +357,6 @@
         }
         .tts-toggle input[type="checkbox"] { width: 20px; height: 20px; }
 
-        /* === MODO PRECISION === */
         .precision-badge {
             display: none;
             background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
@@ -575,7 +574,6 @@
                     <div class="section" id="dataSection" style="display: none;">
                         <div class="section-title" id="selectedToothTitle">📋 Datos de la Pieza</div>
 
-                        <!-- BADGE MODO PRECISIÓN -->
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
                             <span class="precision-badge" id="precisionBadge">🔬 Modo Precisión Activo</span>
                         </div>
@@ -620,20 +618,22 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>🔍 Furcación</label>
+                                <label>🔍 Furcación (I-IV)</label>
                                 <select id="furcation" onchange="autoSave()">
                                     <option value="">- Seleccionar -</option>
                                     <option value="I">I - Inicial</option>
                                     <option value="II">II - Moderada</option>
                                     <option value="III">III - Severa</option>
+                                    <option value="IV">IV - A través</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>🦷 Movilidad</label>
+                                <label>🦷 Movilidad (I-III)</label>
                                 <select id="mobility" onchange="autoSave()">
                                     <option value="">- Seleccionar -</option>
-                                    <option value="0">❌ No</option>
-                                    <option value="1">✅ Sí</option>
+                                    <option value="I">I - Leve</option>
+                                    <option value="II">II - Moderada</option>
+                                    <option value="III">III - Severa</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -700,10 +700,6 @@ let isListening = false;
 let lastCommand = null;
 let lastVoiceTranscript = '';
 let lastVoiceTime = 0;
-
-// === MODO PRECISION: por pieza ===
-// Cuando está activo, los números se interpretan literalmente (no se separan en dígitos)
-// Se activa con "modo precision" y se desactiva al cambiar de pieza o con "modo normal"
 let precisionMode = false;
 
 // ==================== INICIALIZACION ====================
@@ -740,7 +736,6 @@ function showAlert(msg, type) {
 }
 
 function speak(text) {
-    // TTS desactivado - no se usa para evitar feedback loop con el microfono
     return;
 }
 
@@ -848,7 +843,7 @@ function renderPatients() {
 function selectPatient(id) {
     currentPatientId = id;
     selectedTooth = null;
-    precisionMode = false; // Reset al cambiar de paciente
+    precisionMode = false;
     updatePrecisionUI();
     var patient = patients.find(function(p) { return p.id === id; });
 
@@ -941,7 +936,6 @@ function selectTooth(num) {
     var patient = getCurrentPatient();
     if (!patient) return;
 
-    // Al cambiar de pieza, salir del modo precisión automáticamente
     if (selectedTooth !== num && precisionMode) {
         precisionMode = false;
         updatePrecisionUI();
@@ -1112,8 +1106,6 @@ function initVoice() {
         }
         if (final.trim()) {
             var finalTrimmed = final.trim();
-
-            // Deduplicacion: ignorar si es el mismo comando que se acaba de procesar
             var now = Date.now();
             if (finalTrimmed === lastVoiceTranscript && (now - lastVoiceTime) < 2000) {
                 console.log('Comando duplicado ignorado:', finalTrimmed);
@@ -1189,8 +1181,7 @@ function simulateVoice(text) {
     processVoice(text);
 }
 
-// ==================== PARSER NLP MEJORADO CON MODO PRECISION ====================
-
+// ==================== PARSER NLP ====================
 var NUMBER_WORDS = {
     'cero': 0, 'uno': 1, 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
     'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
@@ -1202,13 +1193,6 @@ var NUMBER_WORDS = {
     'veintinueve': 29, 'treinta': 30, 'treintauno': 31, 'treintados': 32
 };
 
-// Decimales escritos en palabras
-var DECIMAL_WORDS = {
-    'punto': '.', 'coma': '.', 'decimal': '.', 'cero': '0',
-    'uno': '1', 'dos': '2', 'tres': '3', 'cuatro': '4', 'cinco': '5',
-    'seis': '6', 'siete': '7', 'ocho': '8', 'nueve': '9'
-};
-
 function parseNumberWord(text) {
     var lower = text.toLowerCase().trim();
     if (NUMBER_WORDS[lower] !== undefined) return NUMBER_WORDS[lower];
@@ -1216,23 +1200,15 @@ function parseNumberWord(text) {
     return isNaN(num) ? null : num;
 }
 
-// Normaliza texto: quita tildes y pasa a minusculas
 function normalizeText(text) {
     return text.toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
 }
 
-// ==================== EXTRACT THREE NUMBERS: MODO NORMAL vs MODO PRECISION ====================
-
-// En MODO NORMAL: "trescientos trece" -> [3, 1, 3] (separación automática de dígitos)
-// En MODO PRECISION: "diez punto cinco doce" -> [10.5, 12] (valores literales)
-
 function extractThreeNumbers(str, usePrecision) {
     var trimmed = str.trim();
 
-    // === MODO PRECISION ===
-    // Parseo literal: cada token es un número independiente, respetando decimales
     if (usePrecision) {
         var tokens = trimmed.split(/[\s,]+/).filter(function(t) { return t.length > 0; });
         var result = [];
@@ -1241,28 +1217,23 @@ function extractThreeNumbers(str, usePrecision) {
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i].toLowerCase().replace(/[,\-]/g, '');
 
-            // Detectar palabra separadora decimal
             if (token === 'punto' || token === 'coma' || token === 'decimal') {
                 currentNum += '.';
                 continue;
             }
 
-            // Convertir palabra a número
             var val = parseNumberWord(token);
             if (val !== null) {
                 currentNum += String(val);
             } else if (/^\d+\.?\d*$/.test(token)) {
-                // Token ya es numérico (ej: "10.5")
                 currentNum += token;
             } else if (token === 'y' || token === 'e') {
-                // "y" como separador de números: guardar currentNum y empezar nuevo
                 if (currentNum) {
                     var parsed = parseFloat(currentNum);
                     if (!isNaN(parsed)) result.push(parsed);
                     currentNum = '';
                 }
             } else {
-                // Token no reconocido, si hay currentNum guardarlo
                 if (currentNum) {
                     var parsed = parseFloat(currentNum);
                     if (!isNaN(parsed)) result.push(parsed);
@@ -1271,7 +1242,6 @@ function extractThreeNumbers(str, usePrecision) {
             }
         }
 
-        // Guardar el último número acumulado
         if (currentNum) {
             var parsed = parseFloat(currentNum);
             if (!isNaN(parsed)) result.push(parsed);
@@ -1280,12 +1250,9 @@ function extractThreeNumbers(str, usePrecision) {
         return result.slice(0, 3);
     }
 
-    // === MODO NORMAL (comportamiento original) ===
     var parts = trimmed.split(/[\s\-,]+/).filter(function(v) { return v.length > 0; });
     var nums = parts.map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
 
-    // Caso especial: si tenemos UN SOLO numero entero de 2-3 digitos >= 10,
-    // probablemente la voz unio los valores (ej: "321" -> 3, 2, 1, "10" -> 1, 0).
     if (nums.length === 1 && parts.length === 1) {
         var single = parts[0];
         var n = parseFloat(single);
@@ -1298,7 +1265,6 @@ function extractThreeNumbers(str, usePrecision) {
         }
     }
 
-    // Validacion adicional: si algun valor individual es >= 10, probablemente esta mal
     var validados = [];
     for (var k = 0; k < nums.length; k++) {
         var v = nums[k];
@@ -1314,6 +1280,27 @@ function extractThreeNumbers(str, usePrecision) {
 
     if (validados.length >= 1) return validados.slice(0, 3);
     return [];
+}
+
+// ==================== HELPER: DETECTAR GRADO (I, II, III, IV) ====================
+// Usado para FURCACION (I-IV) y MOVILIDAD (I-III)
+function detectarGrado(texto, keywords) {
+    for (var k = 0; k < keywords.length; k++) {
+        var kw = keywords[k];
+        var idx = texto.search(new RegExp('\\b' + kw + '\\b'));
+        if (idx === -1) continue;
+        var ventana = texto.substring(idx + kw.length, idx + kw.length + 30);
+        // Buscar romanos o números o palabras en la ventana
+        var match = ventana.match(/\b(iv|iii|ii|i|4|3|2|1|cuatro|tres|dos|uno)\b/);
+        if (match) {
+            var val = match[1];
+            if (val === '1' || val === 'uno' || val === 'i') return 'I';
+            if (val === '2' || val === 'dos' || val === 'ii') return 'II';
+            if (val === '3' || val === 'tres' || val === 'iii') return 'III';
+            if (val === '4' || val === 'cuatro' || val === 'iv') return 'IV';
+        }
+    }
+    return null;
 }
 
 function processVoice(text) {
@@ -1377,9 +1364,7 @@ function processText() {
 function parseCommand(text) {
     var lower = normalizeText(text);
 
-    // === COMANDOS DE MODO PRECISION ===
     if (/\b(modo\s*precision|modo\s*preciso|precision|preciso)\b/.test(lower)) {
-        // Verificar que no sea "modo normal"
         if (/\b(modo\s*normal|normal)\b/.test(lower)) {
             return { action: 'precision_off' };
         }
@@ -1389,12 +1374,10 @@ function parseCommand(text) {
         return { action: 'precision_off' };
     }
 
-    // Comandos de navegacion
     if (/\b(siguiente|next|proximo|proxima)\b/.test(lower)) return { action: 'next' };
     if (/\b(anterior|prev|previo|atras)\b/.test(lower)) return { action: 'prev' };
     if (/\b(corregir|repetir|otra vez)\b/.test(lower)) return { action: 'correct' };
 
-    // Buscar numero de pieza explicito
     var toothNum = null;
     var explicitTooth = false;
 
@@ -1404,23 +1387,19 @@ function parseCommand(text) {
         explicitTooth = true;
     }
 
-    // Si no se menciono pieza explicitamente, usar la pieza actualmente seleccionada
     if (!toothNum && selectedTooth) {
         toothNum = selectedTooth;
     }
 
-    // Validar que sea una pieza valida FDI
     if (!toothNum || toothNum < 11 || toothNum > 48 || toothNum % 10 > 8 || toothNum % 10 === 0) {
         return null;
     }
 
     var result = { toothNumber: toothNum };
     var _explicitTooth = explicitTooth;
-
-    // === MODO PRECISION: parseo literal de números ===
     var usePrecision = precisionMode;
 
-    // PROFUNDIDAD DE SONDAJE
+    // PROFUNDIDAD
     var m = lower.match(/(?:profundidad|prof|sondaje|sondas)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:insercion|inser|sangrado|placa|furcacion|movilidad|implante|biofilm|nivel)\b|$)/);
     if (m) {
         var nums = extractThreeNumbers(m[1], usePrecision);
@@ -1429,7 +1408,7 @@ function parseCommand(text) {
         if (nums.length >= 3) result.probeDistal = nums[2];
     }
 
-    // NIVEL DE INSERCION
+    // INSERCION
     m = lower.match(/(?:insercion|inser|nivel)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:profundidad|prof|sondaje|sangrado|placa|furcacion|movilidad|implante)\b|$)/);
     if (m) {
         var nums = extractThreeNumbers(m[1], usePrecision);
@@ -1438,7 +1417,7 @@ function parseCommand(text) {
         if (nums.length >= 3) result.attachmentDistal = nums[2];
     }
 
-    // Helper: detecta si/no
+    // Helper si/no para campos binarios
     function detectarSiNo(texto, keywords) {
         for (var k = 0; k < keywords.length; k++) {
             var kw = keywords[k];
@@ -1459,30 +1438,21 @@ function parseCommand(text) {
     var placaVal = detectarSiNo(lower, ['placa', 'placas', 'biofilm']);
     if (placaVal !== null) result.plaque = placaVal;
 
-    // FURCACION
-    var mFurc = lower.match(/(?:furcacion|furca|furcaciones)\b[\s:,.\-]*(iii|ii|i|1|2|3|uno|dos|tres|grado\s*[123])/);
-    if (mFurc) {
-        var val = mFurc[1].replace(/grado\s*/, '');
-        if (val === '1' || val === 'uno' || val === 'i') result.furcation = 'I';
-        else if (val === '2' || val === 'dos' || val === 'ii') result.furcation = 'II';
-        else if (val === '3' || val === 'tres' || val === 'iii') result.furcation = 'III';
-        else result.furcation = val.toUpperCase();
-    }
+    // FURCACION (I, II, III, IV)
+    var furcVal = detectarGrado(lower, ['furcacion', 'furca', 'furcaciones']);
+    if (furcVal !== null) result.furcation = furcVal;
 
-    // MOVILIDAD
-    var movilidad = detectarSiNo(lower, ['movilidad', 'movil', 'mueve']);
-    if (movilidad !== null) result.mobility = movilidad;
+    // MOVILIDAD (I, II, III)
+    var movilVal = detectarGrado(lower, ['movilidad', 'movil', 'mueve']);
+    if (movilVal !== null) result.mobility = movilVal;
 
     // IMPLANTE
     var implanteVal = detectarSiNo(lower, ['implante', 'implant', 'implantes']);
     if (implanteVal !== null) result.implant = implanteVal;
 
-    // Si la pieza no fue explicita, debe haber al menos UN campo con datos
     if (!_explicitTooth) {
         var keys = Object.keys(result);
-        if (keys.length <= 1) {
-            return null;
-        }
+        if (keys.length <= 1) return null;
     }
 
     return result;
@@ -1673,7 +1643,7 @@ function printPatient() {
                     tooth.bleeding === '1' ? 'Si' : '-',
                     tooth.plaque === '1' ? 'Si' : '-',
                     tooth.furcation || '-',
-                    tooth.mobility === '1' ? 'Si' : '-',
+                    tooth.mobility || '-',
                     tooth.implant === '1' ? 'Si' : '-'
                 ], idx % 2 === 1);
                 y += rowH;
@@ -1699,7 +1669,7 @@ function exportPatientCSV() {
             csv += num + ',' + (tooth.probeProximal||'') + '/' + (tooth.probeMedio||'') + '/' + (tooth.probeDistal||'') + ',';
             csv += (tooth.attachmentProximal||'') + '/' + (tooth.attachmentMedio||'') + '/' + (tooth.attachmentDistal||'') + ',';
             csv += (tooth.bleeding === '1' ? 'Si' : 'No') + ',' + (tooth.plaque === '1' ? 'Si' : 'No') + ',';
-            csv += (tooth.furcation || '-') + ',' + (tooth.mobility === '1' ? 'Si' : 'No') + ',' + (tooth.implant === '1' ? 'Si' : 'No') + '\n';
+            csv += (tooth.furcation || '-') + ',' + (tooth.mobility || '-') + ',' + (tooth.implant === '1' ? 'Si' : 'No') + '\n';
         }
     });
 
@@ -1726,7 +1696,7 @@ function exportAllCSV() {
                 csv += num + ',' + (tooth.probeProximal||'') + '/' + (tooth.probeMedio||'') + '/' + (tooth.probeDistal||'') + ',';
                 csv += (tooth.attachmentProximal||'') + '/' + (tooth.attachmentMedio||'') + '/' + (tooth.attachmentDistal||'') + ',';
                 csv += (tooth.bleeding === '1' ? 'Si' : 'No') + ',' + (tooth.plaque === '1' ? 'Si' : 'No') + ',';
-                csv += (tooth.furcation || '-') + ',' + (tooth.mobility === '1' ? 'Si' : 'No') + ',' + (tooth.implant === '1' ? 'Si' : 'No') + '\n';
+                csv += (tooth.furcation || '-') + ',' + (tooth.mobility || '-') + ',' + (tooth.implant === '1' ? 'Si' : 'No') + '\n';
             }
         });
         csv += '\n';
@@ -1807,7 +1777,7 @@ function importCSV(event) {
                             bleeding: parts[bleedIdx] && parts[bleedIdx].trim() === 'Si' ? '1' : '',
                             plaque: parts[plaqueIdx] && parts[plaqueIdx].trim() === 'Si' ? '1' : '',
                             furcation: parts[furcIdx] && parts[furcIdx].trim() === '-' ? '' : (parts[furcIdx] ? parts[furcIdx].trim() : ''),
-                            mobility: parts[mobIdx] && parts[mobIdx].trim() === 'Si' ? '1' : '',
+                            mobility: parts[mobIdx] && parts[mobIdx].trim() === '-' ? '' : (parts[mobIdx] ? parts[mobIdx].trim() : ''),
                             implant: parts[implIdx] && parts[implIdx].trim() === 'Si' ? '1' : ''
                         };
                     }
@@ -1841,8 +1811,8 @@ function showHelp() {
         '"Insercion [P] [M] [D]" - Nivel de insercion\n' +
         '"Sangrado si/no" - BOP positivo/negativo\n' +
         '"Placa si/no" - Presencia de placa\n' +
-        '"Furcacion I/II/III" - (o uno/dos/tres)\n' +
-        '"Movilidad si/no" - Movilidad dentaria\n' +
+        '"Furcacion I/II/III/IV" - (o uno/dos/tres/cuatro)\n' +
+        '"Movilidad I/II/III" - Grado de movilidad (o uno/dos/tres)\n' +
         '"Implante si/no" - Marcar como implante\n' +
         '"Siguiente/Anterior" - Navegar entre piezas\n\n' +
         '--- MODO PRECISION ---\n' +
