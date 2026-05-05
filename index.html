@@ -685,48 +685,8 @@ function showAlert(msg, type) {
 }
 
 function speak(text) {
-    var ttsCheckbox = document.getElementById('ttsEnabled');
-    if (!ttsCheckbox || !ttsCheckbox.checked) return;
-    if (!window.speechSynthesis) return;
-
-    window.speechSynthesis.cancel();
-    var utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'es-ES';
-    utter.rate = 1.1;
-    utter.pitch = 1;
-
-    // Pausar reconocimiento durante TTS para evitar feedback loop
-    // (que el microfono capte la voz del propio TTS y la procese)
-    var wasListening = isListening;
-    if (wasListening && voiceRec) {
-        try {
-            voiceRec.abort();
-        } catch(e) {}
-    }
-
-    utter.onend = function() {
-        // Reanudar reconocimiento despues del TTS, con un pequeño delay
-        if (wasListening && voiceRec) {
-            setTimeout(function() {
-                if (isListening) {
-                    try { voiceRec.start(); } catch(e) {}
-                }
-            }, 500);
-        }
-    };
-
-    utter.onerror = function() {
-        // Si falla el TTS, reanudar igualmente
-        if (wasListening && voiceRec) {
-            setTimeout(function() {
-                if (isListening) {
-                    try { voiceRec.start(); } catch(e) {}
-                }
-            }, 500);
-        }
-    };
-
-    window.speechSynthesis.speak(utter);
+    // TTS desactivado - no se usa para evitar feedback loop con el microfono
+    return;
 }
 
 // ==================== PACIENTES ====================
@@ -1050,11 +1010,6 @@ function initVoice() {
     };
 
     voiceRec.onresult = function(e) {
-        // Si estamos hablando (TTS activo), ignorar resultados para evitar loop
-        if (window.speechSynthesis && window.speechSynthesis.speaking) {
-            return;
-        }
-
         var final = '';
         var interim = '';
 
@@ -1269,26 +1224,31 @@ function parseCommand(text) {
     if (/\b(anterior|prev|previo|atras)\b/.test(lower)) return { action: 'prev' };
     if (/\b(corregir|repetir|otra vez)\b/.test(lower)) return { action: 'correct' };
 
-    // Buscar numero de pieza
+    // Buscar numero de pieza explicito
     var toothNum = null;
+    var explicitTooth = false;
 
     // Formato: "pieza 14", "diente 14", "numero 14"
     var toothMatch = lower.match(/\b(?:pieza|diente|numero|pza)\b[\s:]*(\d+|\w+)/);
     if (toothMatch) {
         toothNum = parseNumberWord(toothMatch[1]);
+        explicitTooth = true;
     }
 
-    // Tambien buscar numero suelto al inicio (ej: "14 profundidad...")
-    if (!toothNum) {
-        var startMatch = lower.match(/^\s*(\d{2})\b/);
-        if (startMatch) toothNum = parseInt(startMatch[1]);
+    // Si no se menciono pieza explicitamente, usar la pieza actualmente seleccionada (pegajosa)
+    if (!toothNum && selectedTooth) {
+        toothNum = selectedTooth;
     }
 
+    // Validar que sea una pieza valida FDI (11-18, 21-28, 31-38, 41-48)
     if (!toothNum || toothNum < 11 || toothNum > 48 || toothNum % 10 > 8 || toothNum % 10 === 0) {
         return null;
     }
 
+    // Validacion adicional: si la pieza vino del selectedTooth (no fue explicita),
+    // tiene que haber al menos UN campo de datos en el comando para que tenga sentido
     var result = { toothNumber: toothNum };
+    var _explicitTooth = explicitTooth; // guardamos para validar al final
 
     // PROFUNDIDAD DE SONDAJE
     var m = lower.match(/(?:profundidad|prof|sondaje|sondas)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:margen|insercion|inser|sangrado|placa|furcacion|movilidad|implante|gingival|retraccion|biofilm)\b|$)/);
@@ -1339,6 +1299,16 @@ function parseCommand(text) {
     // IMPLANTE
     m = lower.match(/(?:implante|implant)\b[\s:]*(si|yes|positivo|no|negativo)/);
     if (m) result.implant = /si|yes|positivo/.test(m[1]) ? '1' : '0';
+
+    // Si la pieza no fue explicita (vino del selectedTooth), debe haber al menos UN campo
+    // con datos. Si no, retornamos null (es un comando vacio o no relacionado).
+    if (!_explicitTooth) {
+        var keys = Object.keys(result);
+        // result siempre tiene toothNumber; necesitamos al menos otro campo
+        if (keys.length <= 1) {
+            return null;
+        }
+    }
 
     return result;
 }
