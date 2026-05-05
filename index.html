@@ -1193,6 +1193,7 @@ function processText() {
 // - "3 4 3" (separados por espacios)
 // - "343" (pegados, voz suele unirlos) -> separa en digitos
 // - "3-4-3", "3,4,3", "3.5 4 3"
+// Valida que valores >10 (imposibles en periodontograma, max ~12mm) se separen en digitos
 function extractThreeNumbers(str) {
     var trimmed = str.trim();
 
@@ -1200,12 +1201,14 @@ function extractThreeNumbers(str) {
     var parts = trimmed.split(/[\s\-,]+/).filter(function(v) { return v.length > 0; });
     var nums = parts.map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
 
-    // Caso especial: si tenemos UN SOLO numero pero es entero de exactamente 3 digitos,
-    // probablemente la voz unio "3 4 3" en "343". Separar en digitos.
-    // No separamos numeros de 2 digitos porque "10", "12" son valores validos de un campo
+    // Caso especial: si tenemos UN SOLO numero entero de 2-3 digitos >= 10,
+    // probablemente la voz unio los valores (ej: "321" -> 3, 2, 1, "10" -> 1, 0).
+    // Los valores tipicos en periodontograma son 1-9mm.
     if (nums.length === 1 && parts.length === 1) {
         var single = parts[0];
-        if (/^\d{3}$/.test(single)) {
+        var n = parseFloat(single);
+        // Si es entero de 2-3 digitos sin punto decimal Y >= 10, separar
+        if (/^\d{2,3}$/.test(single) && n >= 10) {
             var result = [];
             for (var i = 0; i < single.length; i++) {
                 result.push(parseInt(single[i]));
@@ -1214,7 +1217,23 @@ function extractThreeNumbers(str) {
         }
     }
 
-    if (nums.length >= 1) return nums.slice(0, 3);
+    // Validacion adicional: si algun valor individual es >= 10, probablemente esta mal
+    // (por ejemplo "12" cuando el odontologo dijo "1 2"). Separar en digitos.
+    var validados = [];
+    for (var k = 0; k < nums.length; k++) {
+        var v = nums[k];
+        if (v >= 10 && Number.isInteger(v) && v < 100) {
+            // Separar en digitos: 12 -> [1, 2]
+            var s = String(v);
+            for (var d = 0; d < s.length; d++) {
+                validados.push(parseInt(s[d]));
+            }
+        } else {
+            validados.push(v);
+        }
+    }
+
+    if (validados.length >= 1) return validados.slice(0, 3);
     return [];
 }
 
@@ -1280,18 +1299,34 @@ function parseCommand(text) {
         if (nums.length >= 3) result.attachmentDistal = nums[2];
     }
 
-    // SANGRADO - tolerante a puntuacion (coma, punto) y espacios entre palabra y respuesta
-    m = lower.match(/(?:sangrado|sangra|sangrante|bop)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
-    if (m) result.bleeding = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
+    // Helper: detecta si/no en una ventana de texto cercana a una palabra clave
+    // Busca la palabra clave, y luego busca "si" o "no" en los siguientes ~20 caracteres
+    function detectarSiNo(texto, keywords) {
+        for (var k = 0; k < keywords.length; k++) {
+            var kw = keywords[k];
+            var idx = texto.search(new RegExp('\\b' + kw + '\\b'));
+            if (idx === -1) continue;
+            // Ventana de texto despues de la keyword
+            var ventana = texto.substring(idx + kw.length, idx + kw.length + 25);
+            // Buscar primero "no" (mas especifico)
+            if (/\bno\b|\bnegativo\b|\bausente\b/.test(ventana)) return '0';
+            if (/\bsi\b|\byes\b|\bpositivo\b|\bpresente\b|\bhay\b/.test(ventana)) return '1';
+        }
+        return null;
+    }
+
+    // SANGRADO
+    var sangrado = detectarSiNo(lower, ['sangrado', 'sangra', 'sangrante', 'bop']);
+    if (sangrado !== null) result.bleeding = sangrado;
 
     // PLACA
-    m = lower.match(/(?:placa|placas|biofilm)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
-    if (m) result.plaque = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
+    var placaVal = detectarSiNo(lower, ['placa', 'placas', 'biofilm']);
+    if (placaVal !== null) result.plaque = placaVal;
 
     // FURCACION - acepta romanos (I, II, III), numeros (1, 2, 3) y palabras (uno, dos, tres)
-    m = lower.match(/(?:furcacion|furca|furcacion)\b[\s:,.\-]*(iii|ii|i|1|2|3|uno|dos|tres|grado\s*[123])/);
-    if (m) {
-        var val = m[1].replace(/grado\s*/, '');
+    var mFurc = lower.match(/(?:furcacion|furca|furcaciones)\b[\s:,.\-]*(iii|ii|i|1|2|3|uno|dos|tres|grado\s*[123])/);
+    if (mFurc) {
+        var val = mFurc[1].replace(/grado\s*/, '');
         if (val === '1' || val === 'uno' || val === 'i') result.furcation = 'I';
         else if (val === '2' || val === 'dos' || val === 'ii') result.furcation = 'II';
         else if (val === '3' || val === 'tres' || val === 'iii') result.furcation = 'III';
@@ -1299,12 +1334,12 @@ function parseCommand(text) {
     }
 
     // MOVILIDAD
-    m = lower.match(/(?:movilidad|movil|mueve)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
-    if (m) result.mobility = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
+    var movilidad = detectarSiNo(lower, ['movilidad', 'movil', 'mueve']);
+    if (movilidad !== null) result.mobility = movilidad;
 
     // IMPLANTE
-    m = lower.match(/(?:implante|implant)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
-    if (m) result.implant = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
+    var implanteVal = detectarSiNo(lower, ['implante', 'implant', 'implantes']);
+    if (implanteVal !== null) result.implant = implanteVal;
 
     // Si la pieza no fue explicita (vino del selectedTooth), debe haber al menos UN campo
     // con datos. Si no, retornamos null (es un comando vacio o no relacionado).
@@ -1369,11 +1404,11 @@ function printPatient() {
     var patient = getCurrentPatient();
     if (!patient) return;
 
-    var html = '<div style="padding: 20px; font-family: Arial; font-size: 11px;">' +
-        '<h1 style="color: #0066cc; text-align: center;">PERIODONTOGRAMA</h1>' +
-        '<p><strong>Paciente:</strong> ' + patient.lastName + ', ' + patient.name + '</p>' +
-        '<p><strong>DNI:</strong> ' + patient.dni + '</p>' +
-        '<p><strong>Fecha:</strong> ' + new Date().toLocaleDateString('es-ES') + '</p>';
+    var html = '<div style="padding: 15px; font-family: Arial; font-size: 11px;">' +
+        '<h1 style="color: #0066cc; text-align: center; margin-bottom: 10px;">PERIODONTOGRAMA</h1>' +
+        '<p style="margin: 4px 0;"><strong>Paciente:</strong> ' + patient.lastName + ', ' + patient.name + '</p>' +
+        '<p style="margin: 4px 0;"><strong>DNI:</strong> ' + patient.dni + '</p>' +
+        '<p style="margin: 4px 0;"><strong>Fecha:</strong> ' + new Date().toLocaleDateString('es-ES') + '</p>';
 
     var cuadrantes = [
         { num: 1, nombre: 'Sup. Izq.', piezas: [18,17,16,15,14,13,12,11] },
@@ -1383,7 +1418,9 @@ function printPatient() {
     ];
 
     cuadrantes.forEach(function(quad) {
-        html += '<h3 style="color: white; background: #0066cc; padding: 6px; margin: 10px 0 5px 0; font-size: 11px;">Cuadrante ' + quad.num + ' - ' + quad.nombre + '</h3>' +
+        // page-break-inside: avoid hace que el cuadrante completo no se corte entre paginas
+        html += '<div style="page-break-inside: avoid; margin-top: 15px;">' +
+        '<h3 style="color: white; background: #0066cc; padding: 6px; margin: 0 0 5px 0; font-size: 11px;">Cuadrante ' + quad.num + ' - ' + quad.nombre + '</h3>' +
         '<table style="width: 100%; border-collapse: collapse; font-size: 9px;">' +
         '<thead><tr style="background: #0066cc; color: white;">' +
         '<th style="border: 1px solid #000; padding: 4px;">Pza</th>' +
@@ -1411,7 +1448,7 @@ function printPatient() {
                 '<td style="border: 1px solid #000; padding: 4px;">' + (tooth.implant === '1' ? 'Si' : '-') + '</td></tr>';
             }
         });
-        html += '</tbody></table>';
+        html += '</tbody></table></div>';
     });
 
     html += '</div>';
@@ -1419,11 +1456,12 @@ function printPatient() {
     var elem = document.createElement('div');
     elem.innerHTML = html;
     var opt = {
-        margin: 10,
+        margin: [10, 10, 15, 10],  // arriba, der, abajo, izq - mas margen abajo
         filename: 'Periodontograma_' + patient.dni + '.pdf',
         image: {type: 'jpeg', quality: 0.98},
-        html2canvas: {scale: 2, backgroundColor: '#fff'},
-        jsPDF: {orientation: 'landscape', unit: 'mm', format: 'a4'}
+        html2canvas: {scale: 2, backgroundColor: '#fff', useCORS: true},
+        jsPDF: {orientation: 'landscape', unit: 'mm', format: 'a4'},
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     html2pdf().set(opt).from(elem).save();
