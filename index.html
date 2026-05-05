@@ -398,13 +398,16 @@
                 </div>
 
                 <div id="patientContent" style="display: none;">
-                    <div class="section" style="background: linear-gradient(135deg, var(--gray-light) 0%, white 100%);">
+                    <div class="section" style="background: linear-gradient(135deg, var(--gray-light) 0%, white 100%); position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--gray-medium); margin-bottom: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h2 id="patientDisplayName" style="font-size: 1.3em; color: var(--primary);">Paciente</h2>
                                 <p id="patientDisplayInfo" style="font-size: 0.85em; color: #7f8c8d; margin-top: 4px;">DNI: -</p>
                             </div>
-                            <button class="btn-icon" onclick="deletePatient()" style="background: var(--tooth-danger); color: var(--danger); font-size: 1.2em;">🗑️</button>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="btn-icon" onclick="scrollToTop()" title="Subir al inicio" style="background: var(--gray-light); color: var(--primary); font-size: 1.1em;">⬆️</button>
+                                <button class="btn-icon" onclick="deletePatient()" style="background: var(--tooth-danger); color: var(--danger); font-size: 1.2em;">🗑️</button>
+                            </div>
                         </div>
                     </div>
 
@@ -1277,28 +1280,31 @@ function parseCommand(text) {
         if (nums.length >= 3) result.attachmentDistal = nums[2];
     }
 
-    // SANGRADO (sí/si/yes/positivo/no/negativo - tildes ya normalizadas)
-    m = lower.match(/(?:sangrado|sangra|sangrante|bop)\b[\s:]*(si|yes|positivo|no|negativo)/);
-    if (m) result.bleeding = /si|yes|positivo/.test(m[1]) ? '1' : '0';
+    // SANGRADO - tolerante a puntuacion (coma, punto) y espacios entre palabra y respuesta
+    m = lower.match(/(?:sangrado|sangra|sangrante|bop)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
+    if (m) result.bleeding = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
 
     // PLACA
-    m = lower.match(/(?:placa|placas|biofilm)\b[\s:]*(si|yes|positivo|no|negativo)/);
-    if (m) result.plaque = /si|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:placa|placas|biofilm)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
+    if (m) result.plaque = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
 
-    // FURCACION
-    m = lower.match(/(?:furcacion|furca)\b[\s:]*(iii|ii|i|1|2|3)/);
+    // FURCACION - acepta romanos (I, II, III), numeros (1, 2, 3) y palabras (uno, dos, tres)
+    m = lower.match(/(?:furcacion|furca|furcacion)\b[\s:,.\-]*(iii|ii|i|1|2|3|uno|dos|tres|grado\s*[123])/);
     if (m) {
-        var val = m[1];
-        result.furcation = val === '1' ? 'I' : val === '2' ? 'II' : val === '3' ? 'III' : val.toUpperCase();
+        var val = m[1].replace(/grado\s*/, '');
+        if (val === '1' || val === 'uno' || val === 'i') result.furcation = 'I';
+        else if (val === '2' || val === 'dos' || val === 'ii') result.furcation = 'II';
+        else if (val === '3' || val === 'tres' || val === 'iii') result.furcation = 'III';
+        else result.furcation = val.toUpperCase();
     }
 
     // MOVILIDAD
-    m = lower.match(/(?:movilidad|movil|mueve)\b[\s:]*(si|yes|positivo|no|negativo)/);
-    if (m) result.mobility = /si|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:movilidad|movil|mueve)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
+    if (m) result.mobility = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
 
     // IMPLANTE
-    m = lower.match(/(?:implante|implant)\b[\s:]*(si|yes|positivo|no|negativo)/);
-    if (m) result.implant = /si|yes|positivo/.test(m[1]) ? '1' : '0';
+    m = lower.match(/(?:implante|implant)\b[\s:,.\-]*(si|sí|yes|positivo|presente|hay|no|negativo|ausente|sin)/);
+    if (m) result.implant = /si|sí|yes|positivo|presente|hay/.test(m[1]) ? '1' : '0';
 
     // Si la pieza no fue explicita (vino del selectedTooth), debe haber al menos UN campo
     // con datos. Si no, retornamos null (es un comando vacio o no relacionado).
@@ -1571,20 +1577,26 @@ function importCSV(event) {
 // ==================== UTILIDADES ====================
 function showHelp() {
     var helpText = 'COMANDOS DE VOZ:\n\n' +
-        '"Pieza [numero]" - Selecciona diente\n' +
+        '"Pieza [numero]" - Selecciona diente (queda activo)\n' +
         '"Profundidad [P] [M] [D]" - Sondaje (ej: 3 4 3)\n' +
         '"Margen [P] [M] [D]" - Margen gingival\n' +
         '"Insercion [P] [M] [D]" - Nivel de insercion\n' +
         '"Sangrado si/no" - BOP positivo/negativo\n' +
         '"Placa si/no" - Presencia de placa\n' +
-        '"Furcacion I/II/III" - Grado de furcacion\n' +
+        '"Furcacion I/II/III" - (o uno/dos/tres)\n' +
         '"Movilidad si/no" - Movilidad dentaria\n' +
         '"Implante si/no" - Marcar como implante\n' +
-        '"Siguiente/Anterior" - Navegar entre piezas\n' +
-        '"Corregir" - Repetir ultimo comando\n\n' +
-        'Ejemplo completo:\n' +
-        '"Pieza catorce, profundidad tres cuatro tres, sangrado si, placa no"';
+        '"Siguiente/Anterior" - Navegar entre piezas\n\n' +
+        'TRUCO: Una vez dictada la pieza, queda fija.\n' +
+        'Podes dictar varios campos en pausas separadas\n' +
+        'sin repetir el numero. Decis "pieza XX" cuando\n' +
+        'queres cambiar a otra pieza.';
     alert(helpText);
+}
+
+function scrollToTop() {
+    var content = document.querySelector('.content');
+    if (content) content.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetAll() {
