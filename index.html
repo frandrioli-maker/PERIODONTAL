@@ -9,10 +9,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PerioDental">
 
-    <title>PerioDental Pro</title>
+    <title>RN Estudio Odontológico - PerioDental Pro</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>🦷</text></svg>">
+    
+    <!-- Logo SVG como favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='90' fill='%230066cc'/%3E%3Ctext x='50%25' y='45%25' font-family='Arial, sans-serif' font-size='72' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3Ern%3C/text%3E%3Ccircle cx='140' cy='140' r='10' fill='white'/%3E%3Cpath d='M 50 140 Q 96 170 142 140' stroke='white' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='90' fill='%230066cc'/%3E%3Ctext x='50%25' y='45%25' font-family='Arial, sans-serif' font-size='72' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3Ern%3C/text%3E%3Ccircle cx='140' cy='140' r='10' fill='white'/%3E%3Cpath d='M 50 140 Q 96 170 142 140' stroke='white' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -51,7 +53,7 @@
             flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        .header h1 { font-size: 1.5em; margin-bottom: 2px; font-weight: 700; }
+        .header h1 { font-size: 1.3em; margin-bottom: 2px; font-weight: 700; }
         .header p { opacity: 0.9; font-size: 0.75em; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .header-actions { display: flex; gap: 8px; }
@@ -64,6 +66,37 @@
             font-size: 0.8em;
             cursor: pointer;
             backdrop-filter: blur(10px);
+        }
+
+        /* Logo en header */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+        }
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .brand-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .brand-sub {
+            font-size: 0.7em;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+        .brand-ig {
+            font-size: 0.65em;
+            opacity: 0.7;
+            margin-top: 1px;
         }
 
         .main { display: grid; grid-template-columns: 220px 1fr; gap: 0; flex: 1; overflow: hidden; }
@@ -87,6 +120,9 @@
             .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
             .sidebar-overlay.active { display: block; }
             .content { width: 100%; padding-bottom: 90px !important; }
+            .brand-name { font-size: 0.95em; }
+            .brand-sub { font-size: 0.65em; }
+            .brand-ig { font-size: 0.6em; }
         }
         .sidebar {
             background: var(--gray-light);
@@ -389,7 +425,7 @@
         .precision-hint strong { color: #6a1b9a; }
 
         @media print {
-            .sidebar, .menu-toggle, .voice-section, .mode-buttons, .btn-danger, .precision-hint { display: none !important; }
+            .sidebar, .menu-toggle, .voice-section, .mode-buttons, .btn-danger, .precision-hint, .brand-logo { display: none !important; }
             .main { grid-template-columns: 1fr; }
             body { background: white; }
             .section { box-shadow: none; border: 1px solid #ccc; }
@@ -400,9 +436,19 @@
     <div class="container">
         <div class="header">
             <div class="header-top">
-                <div>
-                    <h1>🦷 PerioDental Pro</h1>
-                    <p>Periodontograma por voz - Sistema FDI</p>
+                <div class="brand">
+                    <!-- Logo SVG RN -->
+                    <svg class="brand-logo" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="96" cy="96" r="90" fill="#0066cc"/>
+                        <text x="50%" y="45%" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">rn</text>
+                        <circle cx="140" cy="140" r="10" fill="white"/>
+                        <path d="M 50 140 Q 96 170 142 140" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <div class="brand-text">
+                        <div class="brand-name">RN Estudio Odontológico</div>
+                        <div class="brand-sub">PerioDental Pro - Periodontograma por voz</div>
+                        <div class="brand-ig">@rnodontologiaok</div>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <button class="header-btn" onclick="showHelp()">❓ Ayuda</button>
@@ -1204,16 +1250,12 @@ function normalizeText(text) {
 }
 
 // ==================== EXTRACT THREE NUMBERS ====================
-// MODO NORMAL: separación automática de dígitos para números de 2-3 cifras
-// MODO PRECISION: valores literales enteros 10-20, separados por cualquier delimitador
-
 function extractThreeNumbers(str, usePrecision) {
     var trimmed = str.trim();
 
-    // === MODO PRECISION: enteros literales 10-20 ===
     if (usePrecision) {
         // Normalizar separadores: comas, puntos, guiones, barras → espacios
-        // También palabras separadoras comunes que dicta el usuario
+        // También palabras separadoras comunes
         var normalized = trimmed
             .replace(/[,\.\-\/\\]/g, ' ')
             .replace(/\b(y|e|siguiente|luego|otro|mas)\b/g, ' ');
@@ -1225,26 +1267,22 @@ function extractThreeNumbers(str, usePrecision) {
             var token = tokens[i];
             var val = parseNumberWord(token);
             
-            // Si es número literal (incluyendo >= 10), lo tomamos
             if (val !== null && val >= 0 && val <= 20) {
                 result.push(val);
             } else if (/^\d+$/.test(token)) {
-                // Número escrito en dígitos
                 var num = parseInt(token);
                 if (num >= 0 && num <= 20) result.push(num);
             }
-            // Ignoramos tokens no numéricos (incluyendo "punto", "coma", etc.)
+            // Ignoramos "punto", "coma" y otros tokens no numéricos
         }
         
         return result.slice(0, 3);
     }
 
-    // === MODO NORMAL (comportamiento original) ===
+    // MODO NORMAL
     var parts = trimmed.split(/[\s\-,]+/).filter(function(v) { return v.length > 0; });
     var nums = parts.map(function(v) { return parseFloat(v); }).filter(function(v) { return !isNaN(v); });
 
-    // Caso especial: si tenemos UN SOLO numero entero de 2-3 digitos >= 10,
-    // probablemente la voz unio los valores (ej: "321" -> 3, 2, 1)
     if (nums.length === 1 && parts.length === 1) {
         var single = parts[0];
         var n = parseFloat(single);
@@ -1257,7 +1295,6 @@ function extractThreeNumbers(str, usePrecision) {
         }
     }
 
-    // Validacion: si algun valor individual es >= 10, probablemente esta mal
     var validados = [];
     for (var k = 0; k < nums.length; k++) {
         var v = nums[k];
@@ -1355,23 +1392,20 @@ function processText() {
 function parseCommand(text) {
     var lower = normalizeText(text);
 
-    // === COMANDOS DE MODO PRECISION ===
     if (/\b(modo\s*precision|modo\s*preciso|precision|preciso)\b/.test(lower)) {
         if (/\b(modo\s*normal|normal)\b/.test(lower)) {
             return { action: 'precision_off' };
         }
-        return { action: 'precision_on' };
+        return  { action: 'precision_on' };
     }
     if (/\b(modo\s*normal|normal)\b/.test(lower)) {
         return { action: 'precision_off' };
     }
 
-    // Comandos de navegacion
     if (/\b(siguiente|next|proximo|proxima)\b/.test(lower)) return { action: 'next' };
     if (/\b(anterior|prev|previo|atras)\b/.test(lower)) return { action: 'prev' };
     if (/\b(corregir|repetir|otra vez)\b/.test(lower)) return { action: 'correct' };
 
-    // Buscar numero de pieza explicito
     var toothNum = null;
     var explicitTooth = false;
 
@@ -1381,12 +1415,10 @@ function parseCommand(text) {
         explicitTooth = true;
     }
 
-    // Si no se menciono pieza explicitamente, usar la pieza actualmente seleccionada
     if (!toothNum && selectedTooth) {
         toothNum = selectedTooth;
     }
 
-    // Validar que sea una pieza valida FDI
     if (!toothNum || toothNum < 11 || toothNum > 48 || toothNum % 10 > 8 || toothNum % 10 === 0) {
         return null;
     }
@@ -1395,7 +1427,6 @@ function parseCommand(text) {
     var _explicitTooth = explicitTooth;
     var usePrecision = precisionMode;
 
-    // PROFUNDIDAD DE SONDAJE
     var m = lower.match(/(?:profundidad|prof|sondaje|sondas)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:insercion|inser|sangrado|placa|furcacion|movilidad|implante|biofilm|nivel)\b|$)/);
     if (m) {
         var nums = extractThreeNumbers(m[1], usePrecision);
@@ -1404,7 +1435,6 @@ function parseCommand(text) {
         if (nums.length >= 3) result.probeDistal = nums[2];
     }
 
-    // NIVEL DE INSERCION
     m = lower.match(/(?:insercion|inser|nivel)\b[\s:]*([\d\.\s\-,]+?)(?=\s+(?:profundidad|prof|sondaje|sangrado|placa|furcacion|movilidad|implante)\b|$)/);
     if (m) {
         var nums = extractThreeNumbers(m[1], usePrecision);
@@ -1413,7 +1443,6 @@ function parseCommand(text) {
         if (nums.length >= 3) result.attachmentDistal = nums[2];
     }
 
-    // Helper: detecta si/no en campos binarios
     function detectarSiNo(texto, keywords) {
         for (var k = 0; k < keywords.length; k++) {
             var kw = keywords[k];
@@ -1426,27 +1455,21 @@ function parseCommand(text) {
         return null;
     }
 
-    // SANGRADO
     var sangrado = detectarSiNo(lower, ['sangrado', 'sangra', 'sangrante', 'bop']);
     if (sangrado !== null) result.bleeding = sangrado;
 
-    // PLACA
     var placaVal = detectarSiNo(lower, ['placa', 'placas', 'biofilm']);
     if (placaVal !== null) result.plaque = placaVal;
 
-    // FURCACION (I, II, III, IV) - incluye "fuerza" por error común de Chrome
     var furcVal = detectarGrado(lower, ['furcacion', 'furca', 'furcaciones', 'fuerza', 'fuerzas']);
     if (furcVal !== null) result.furcation = furcVal;
 
-    // MOVILIDAD (I, II, III)
     var movilVal = detectarGrado(lower, ['movilidad', 'movil', 'mueve']);
     if (movilVal !== null) result.mobility = movilVal;
 
-    // IMPLANTE
     var implanteVal = detectarSiNo(lower, ['implante', 'implant', 'implantes']);
     if (implanteVal !== null) result.implant = implanteVal;
 
-    // Si la pieza no fue explicita, debe haber al menos UN campo con datos
     if (!_explicitTooth) {
         var keys = Object.keys(result);
         if (keys.length <= 1) return null;
