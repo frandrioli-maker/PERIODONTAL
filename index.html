@@ -100,8 +100,31 @@
             margin-top: 1px;
         }
 
-        .main { display: grid; grid-template-columns: 220px 1fr; gap: 0; flex: 1; overflow: hidden; }
-        @media (max-width: 800px) {
+        /* LAYOUT BASE - Mobile first: 1 columna */
+        .main { display: grid; grid-template-columns: 1fr; gap: 0; flex: 1; overflow: hidden; }
+
+        /* TABLET (600px - 1200px): 2 columnas */
+        @media (min-width: 600px) and (max-width: 1199px) {
+            .main { grid-template-columns: 200px 1fr; }
+            .sidebar { position: static !important; left: auto !important; width: auto; height: auto; max-height: none; padding: 12px; }
+            .sidebar-overlay { display: none !important; }
+            .menu-toggle { display: none !important; }
+            .content { width: 100%; padding-bottom: 0 !important; }
+        }
+
+        /* DESKTOP (1200px+): 3 columnas */
+        @media (min-width: 1200px) {
+            .main { grid-template-columns: 220px 1fr 350px; }
+            .sidebar { position: static !important; left: auto !important; width: 220px; height: auto; max-height: none; padding: 12px; border-right: 1px solid var(--gray-medium); }
+            .sidebar-overlay { display: none !important; }
+            .menu-toggle { display: none !important; }
+            .content { width: 100%; padding: 12px; padding-bottom: 12px !important; }
+            .teeth-grid { grid-template-columns: repeat(4, 1fr); }
+            #dataSection { grid-column: auto; }
+        }
+
+        /* MOBILE (<600px): sidebar colapsable */
+        @media (max-width: 599px) {
             .main { grid-template-columns: 1fr; }
             .sidebar {
                 position: fixed;
@@ -133,7 +156,33 @@
             display: flex;
             flex-direction: column;
         }
-        .content { padding: 12px; overflow-y: auto; background: white; }
+
+        /* CONTENT - mobileFirst: vertical stacking */
+        .content { 
+            padding: 12px; 
+            overflow-y: auto; 
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Desktop: hacer .content una 2-columna (piezas | datos) */
+        @media (min-width: 1200px) {
+            .content {
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 12px;
+                padding: 12px;
+            }
+            #patientContent { grid-column: 1; }
+            #dataSection { grid-column: 2; grid-row: 1 / span 10; }
+        }
+
+        /* Tablet: mantener stacking vertical pero columna visible */
+        @media (min-width: 600px) and (max-width: 1199px) {
+            .content { display: flex; flex-direction: column; }
+        }
 
         .section { margin-bottom: 12px; background: white; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         .section-title { font-size: 0.9em; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
@@ -179,6 +228,10 @@
         .btn-icon { width: 44px; height: 44px; padding: 0; border-radius: 50%; }
 
         .teeth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        
+        @media (min-width: 1200px) {
+            .teeth-grid { gap: 10px; margin-bottom: 16px; }
+        }
         .tooth-btn {
             padding: 10px 6px;
             background: var(--gray-light);
@@ -190,6 +243,16 @@
             transition: all 0.2s;
             position: relative;
             min-height: 48px;
+        }
+
+        @media (min-width: 1200px) {
+            .tooth-btn { 
+                padding: 12px 8px;
+                min-height: 60px;
+                font-size: 1em;
+                border-radius: 12px;
+            }
+        }
         }
         .tooth-btn:active { transform: scale(0.95); }
         .tooth-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,102,204,0.3); }
@@ -1010,7 +1073,8 @@ function selectTooth(num) {
     renderTeeth();
     updateStats();
 
-    if (window.innerWidth <= 800) {
+    // Solo scroll en mobile/tablet, no en desktop
+    if (window.innerWidth <= 1199) {
         document.getElementById('dataSection').scrollIntoView({ behavior: 'smooth' });
     }
 }
