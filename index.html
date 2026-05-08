@@ -112,15 +112,16 @@
             .content { width: 100%; padding-bottom: 0 !important; }
         }
 
-        /* DESKTOP (1200px+): 3 columnas */
+        /* DESKTOP (1200px+): 3 columnas optimizadas */
         @media (min-width: 1200px) {
-            .main { grid-template-columns: 220px 1fr 350px; }
-            .sidebar { position: static !important; left: auto !important; width: 220px; height: auto; max-height: none; padding: 12px; border-right: 1px solid var(--gray-medium); }
+            .main { grid-template-columns: 280px 1fr 380px; }
+            .sidebar { position: static !important; left: auto !important; width: 280px; height: auto; max-height: none; padding: 12px; border-right: 1px solid var(--gray-medium); }
             .sidebar-overlay { display: none !important; }
             .menu-toggle { display: none !important; }
             .content { width: 100%; padding: 12px; padding-bottom: 12px !important; }
             .teeth-grid { grid-template-columns: repeat(4, 1fr); }
             #dataSection { grid-column: auto; }
+            #patientsList { max-height: none !important; min-height: auto; flex: 1; }
         }
 
         /* MOBILE (<600px): sidebar colapsable */
@@ -171,12 +172,26 @@
         @media (min-width: 1200px) {
             .content {
                 display: grid;
-                grid-template-columns: 1fr 350px;
+                grid-template-columns: 1fr 380px;
                 gap: 12px;
                 padding: 12px;
+                overflow: hidden;
             }
-            #patientContent { grid-column: 1; }
-            #dataSection { grid-column: 2; grid-row: 1 / span 10; }
+            #patientContent { 
+                grid-column: 1; 
+                grid-row: 1;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            #dataSection { 
+                grid-column: 2; 
+                grid-row: 1 / span 10;
+                overflow-y: auto;
+                padding-left: 8px;
+                border-left: 1px solid var(--gray-medium);
+            }
         }
 
         /* Tablet: mantener stacking vertical pero columna visible */
@@ -225,6 +240,12 @@
         .btn-danger { background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%); color: white; width: 100%; margin-top: 8px; }
         .btn-secondary { background: white; color: var(--primary); border: 2px solid var(--primary); width: 100%; }
         .btn-lg { padding: 14px 20px; font-size: 1.1em; }
+        
+        /* En desktop, botones más chicos */
+        @media (min-width: 1200px) {
+            .btn-lg { padding: 10px 16px; font-size: 0.95em; }
+        }
+        
         .btn-icon { width: 44px; height: 44px; padding: 0; border-radius: 50%; }
 
         .teeth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
@@ -381,9 +402,23 @@
             font-size: 0.9em;
             transition: all 0.2s;
         }
+        
+        @media (min-width: 1200px) {
+            .patient-item {
+                padding: 14px;
+                margin-bottom: 10px;
+                font-size: 0.95em;
+            }
+        }
+        
         .patient-item:hover { border-color: var(--primary); }
         .patient-item.active { background: rgba(0,102,204,0.08); border: 2px solid var(--primary); }
         .patient-name { font-weight: 700; color: var(--primary); }
+        
+        @media (min-width: 1200px) {
+            .patient-name { font-size: 1em; }
+        }
+        
         .patient-dni { font-size: 0.8em; color: #7f8c8d; margin-top: 3px; }
 
         .empty-state { text-align: center; padding: 40px 20px; color: #95a5a6; }
@@ -534,7 +569,7 @@
                     <button class="btn-primary btn-lg" onclick="addPatient()">➕ Crear Paciente</button>
                 </div>
 
-                <div id="patientsList" style="overflow-y: auto; max-height: 40vh; margin-bottom: 12px;"></div>
+                <div id="patientsList" style="overflow-y: auto; max-height: 40vh; margin-bottom: 12px; min-height: 200px;"></div>
 
                 <div style="padding-top: 12px; border-top: 2px solid var(--gray-medium); padding-bottom: 20px;">
                     <div class="section-title">💾 BASE DE DATOS</div>
@@ -1311,6 +1346,8 @@ function startVoice() {
         voiceRec.start();
         document.getElementById('voiceStatus').textContent = 'Iniciando micrófono...';
     } catch (err) {
+        console.error('Voice error:', err);
+        
         // "already started" - esperar y reintentar
         if (err.message && err.message.includes('already started')) {
             console.log('Recognition ya activo, reintentando...');
@@ -1320,8 +1357,26 @@ function startVoice() {
                     isListening = false;
                 }
             }, 1000);
-        } else {
-            showAlert('Error al iniciar micrófono: ' + err.message, 'error');
+        } 
+        // Error de permisos o micrófono bloqueado
+        else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            showAlert(
+                'Micrófono bloqueado. Para habilitarlo:\n\n' +
+                'Chrome/Edge: Ve a chrome://settings/content/microphone\n' +
+                'Busca este sitio y cambia a "Permitir"\n' +
+                'Recarga la página\n\n' +
+                'O usa el modo texto para ingresar datos.',
+                'error'
+            );
+            isListening = false;
+        }
+        // Micrófono no disponible
+        else if (err.name === 'NotFoundError') {
+            showAlert('No se detectó micrófono en tu dispositivo. Usa el modo texto para ingresar datos.', 'error');
+            isListening = false;
+        }
+        else {
+            showAlert('Error al iniciar micrófono: ' + err.message + '\nProbá usar el modo texto.', 'error');
             isListening = false;
         }
     }
