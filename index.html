@@ -12,15 +12,16 @@
     <title>RN Estudio Odontológico - PerioDental Pro</title>
     <link rel="manifest" href="./manifest.json">
     
-    <!-- Logo SVG como favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='90' fill='%230066cc'/%3E%3Ctext x='50%25' y='45%25' font-family='Arial, sans-serif' font-size='72' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3Ern%3C/text%3E%3Ccircle cx='140' cy='140' r='10' fill='white'/%3E%3Cpath d='M 50 140 Q 96 170 142 140' stroke='white' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='90' fill='%230066cc'/%3E%3Ctext x='50%25' y='45%25' font-family='Arial, sans-serif' font-size='72' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3Ern%3C/text%3E%3Ccircle cx='140' cy='140' r='10' fill='white'/%3E%3Cpath d='M 50 140 Q 96 170 142 140' stroke='white' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+    <!-- Logo SVG como favicon - NEGRO -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiB3aWR0aD0iMTYxLjAwMDAwMHB0IiBoZWlnaHQ9IjE2MS4wMDAwMDBwdCIgdmlld0JveD0iMCAwIDE2MS4wMDAwMDAgMTYxLjAwMDAwMCIKIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiPgo8bWV0YWRhdGE+CkNyZWF0ZWQgYnkgcG90cmFjZSAxLjE1LCB3cml0dGVuIGJ5IFBldGVyIFNlbGluZ2VyIDIwMDEtMjAxNwo8L21ldGFkYXRhPgo8cmVjdCB3aWR0aD0iMTYxIiBoZWlnaHQ9IjE2MSIgZmlsbD0id2hpdGUiLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsMTYxLjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSIKZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSJub25lIj4KPHBhdGggZD0iTTY1NSAxNTM0IGMtNDA0IC05MCAtNjYxIC00ODIgLTU3OSAtODgyIDk1IC00NjMgNTg5IC03MjUgMTAyNCAtNTQzCjM5MyAxNjQgNTcwIDYzMiAzODUgMTAxNiAtOTQgMTk0IC0yNzQgMzQ0IC00ODAgNDAwIC04NyAyNCAtMjY0IDI4IC0zNTAgOXoKbS02NSAtMzYzIGwwIC00OSAtNzAgLTQgYy03OSAtNCAtMTE0IC0yNCAtMTQyIC03OSAtMTUgLTI5IC0xOCAtNjMgLTE4IC0yMTYKbDAgLTE4MyAtNTAgMCAtNTAgMCAwIDE4MCBjMCAxMzggNCAxOTAgMTYgMjI3IDM5IDExNyAxMTkgMTY5IDI2NyAxNzIgbDQ3IDEKMCAtNDl6IG0xOTAgMTkgYzAgLTE2IDIgLTMwIDUgLTMwIDIgMCAyMCAxMSAzOSAyNCA2OSA0NiAyMzAgNDUgMzE4IC0yIDUxCi0yNyA5MyAtNzggMTA4IC0xMzMgNiAtMTkgMTAgLTExOCAxMCAtMjIxIGwwIC0xODggLTQ0IDAgLTQ0IDAgLTQgMTg4IGMtMwoyMTUgLTEwIDIzNyAtODYgMjczIC01OCAyOSAtMTg2IDI1IC0yMjkgLTcgLTYxIC00NiAtNjggLTcxIC03MSAtMjcxIGwtNAotMTgzIC00OSAwIC00OSAwIDAgMjgzIGMwIDE1NiAzIDI4NyA3IDI5MCAzIDQgMjYgNyA1MCA3IDQxIDAgNDMgLTEgNDMgLTMwagp tNjQyIC00NTcgYzM2IC0zMiAxNSAtOTMgLTMyIC05MyAtNTUgMCAtNzggNTIgLTQwIDkwIDI0IDI0IDQ3IDI1IDcyIDN6Cm0tMTI5IC0yNjQgYy0xMDAgLTE4NiAtMzUxIC0yODUgLTU0MCAtMjE0IC0zNyAxNCAtMzYgMTQgMzggOCAxNzcgLTEzIDMyOSA0NQo0NDggMTczIDM5IDQyIDcxIDgxIDcxIDg3IDAgNiAzIDggNiA0IDMgLTMgLTcgLTI5IC0yMyAtNTh6Ii8+CjwvZz4KPC9zdmc+Cg==">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiB3aWR0aD0iMTYxLjAwMDAwMHB0IiBoZWlnaHQ9IjE2MS4wMDAwMDBwdCIgdmlld0JveD0iMCAwIDE2MS4wMDAwMDAgMTYxLjAwMDAwMCIKIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiPgo8bWV0YWRhdGE+CkNyZWF0ZWQgYnkgcG90cmFjZSAxLjE1LCB3cml0dGVuIGJ5IFBldGVyIFNlbGluZ2VyIDIwMDEtMjAxNwo8L21ldGFkYXRhPgo8cmVjdCB3aWR0aD0iMTYxIiBoZWlnaHQ9IjE2MSIgZmlsbD0id2hpdGUiLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsMTYxLjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSIKZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSJub25lIj4KPHBhdGggZD0iTTY1NSAxNTM0IGMtNDA0IC05MCAtNjYxIC00ODIgLTU3OSAtODgyIDk1IC00NjMgNTg5IC03MjUgMTAyNCAtNTQzCjM5MyAxNjQgNTcwIDYzMiAzODUgMTAxNiAtOTQgMTk0IC0yNzQgMzQ0IC00ODAgNDAwIC04NyAyNCAtMjY0IDI4IC0zNTAgOXoKbS02NSAtMzYzIGwwIC00OSAtNzAgLTQgYy03OSAtNCAtMTE0IC0yNCAtMTQyIC03OSAtMTUgLTI5IC0xOCAtNjMgLTE4IC0yMTYKbDAgLTE4MyAtNTAgMCAtNTAgMCAwIDE4MCBjMCAxMzggNCAxOTAgMTYgMjI3IDM5IDExNyAxMTkgMTY5IDI2NyAxNzIgbDQ3IDEKMCAtNDl6IG0xOTAgMTkgYzAgLTE2IDIgLTMwIDUgLTMwIDIgMCAyMCAxMSAzOSAyNCA2OSA0NiAyMzAgNDUgMzE4IC0yIDUxCi0yNyA5MyAtNzggMTA4IC0xMzMgNiAtMTkgMTAgLTExOCAxMCAtMjIxIGwwIC0xODggLTQ0IDAgLTQ0IDAgLTQgMTg4IGMtMwoyMTUgLTEwIDIzNyAtODYgMjczIC01OCAyOSAtMTg2IDI1IC0yMjkgLTcgLTYxIC00NiAtNjggLTcxIC03MSAtMjcxIGwtNAotMTgzIC00OSAwIC00OSAwIDAgMjgzIGMwIDE1NiAzIDI4NyA3IDI5MCAzIDQgMjYgNyA1MCA3IDQxIDAgNDMgLTEgNDMgLTMwagp tNjQyIC00NTcgYzM2IC0zMiAxNSAtOTMgLTMyIC05MyAtNTUgMCAtNzggNTIgLTQwIDkwIDI0IDI0IDQ3IDI1IDcyIDN6Cm0tMTI5IC0yNjQgYy0xMDAgLTE4NiAtMzUxIC0yODUgLTU0MCAtMjE0IC0zNyAxNCAtMzYgMTQgMzggOCAxNzcgLTEzIDMyOSA0NQo0NDggMTczIDM5IDQyIDcxIDgxIDcxIDg3IDAgNiAzIDggNiA0IDMgLTMgLTcgLTI5IC0yMyAtNTh6Ii8+CjwvZz4KPC9zdmc+Cg==">
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
-            --primary: #000000;
+            --primary: #0066cc;
             --primary-dark: #0052a3;
             --accent: #ff6b35;
             --success: #00b894;
@@ -438,11 +439,11 @@
             <div class="header-top">
                 <div class="brand">
                     <!-- Logo SVG RN -->
-                    <svg class="brand-logo" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="96" cy="96" r="90" fill="#0066cc"/>
-                        <text x="50%" y="45%" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">rn</text>
-                        <circle cx="140" cy="140" r="10" fill="white"/>
-                        <path d="M 50 140 Q 96 170 142 140" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <svg class="brand-logo" viewBox="0 0 161 161" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="161" height="161" fill="white"/>
+                        <g transform="translate(0.000000,161.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                            <path d="M655 1534 c-404 -90 -661 -482 -579 -882 95 -463 589 -725 1024 -543 393 164 570 632 385 1016 -94 194 -274 344 -480 400 -87 24 -264 28 -350 9z m-65 -363 l0 -49 -70 -4 c-79 -4 -114 -24 -142 -79 -15 -29 -18 -63 -18 -216 l0 -183 -50 0 -50 0 0 180 c0 138 4 190 16 227 39 117 119 169 267 172 l47 1 0 -49z m190 19 c0 -16 2 -30 5 -30 2 0 20 11 39 24 69 46 230 45 318 -2 51 -27 93 -78 108 -133 6 -19 10 -118 10 -221 l0 -188 -44 0 -44 0 -4 188 c-3 215 -10 237 -86 273 -58 29 -186 25 -229 -7 -61 -46 -68 -71 -71 -271 l-4 -183 -49 0 -49 0 0 283 c0 156 3 287 7 290 3 4 26 7 50 7 41 0 43 -1 43 -30z m642 -457 c36 -32 15 -93 -32 -93 -55 0 -78 52 -40 90 24 24 47 25 72 3z m-129 -264 c-100 -186 -351 -285 -540 -214 -37 14 -36 14 38 8 177 -13 329 45 448 173 39 42 71 81 71 87 0 6 3 8 6 4 3 -3 -7 -29 -23 -58z"/>
+                        </g>
                     </svg>
                     <div class="brand-text">
                         <div class="brand-name">RN Estudio Odontológico</div>
@@ -743,6 +744,7 @@ let currentPatientId = null;
 let selectedTooth = null;
 let voiceRec = null;
 let isListening = false;
+let voiceStartAttempts = 0;
 let lastCommand = null;
 let lastVoiceTranscript = '';
 let lastVoiceTime = 0;
@@ -1167,22 +1169,50 @@ function initVoice() {
     };
 
     voiceRec.onerror = function(e) {
+        console.error('Voice error:', e.error);
+        
         if (e.error === 'not-allowed') {
-            showAlert('Microfono bloqueado. Permite el acceso en la configuracion del navegador.', 'error');
-            stopVoice();
-        } else if (e.error === 'network') {
-            showAlert('Error de red. Verifica tu conexion a internet.', 'error');
-            stopVoice();
-        } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
-            console.error('Voice error:', e.error);
+            showAlert('Micrófono bloqueado. Permite el acceso en la configuración del navegador.', 'error');
+            isListening = false;
+            document.getElementById('micButton').classList.remove('listening');
+            document.getElementById('voiceStatus').textContent = 'Micrófono bloqueado';
+        } 
+        // Error de red - reintentar silenciosamente sin mostrar alerta
+        else if (e.error === 'network') {
+            console.log('Error de red, reintentando...');
+            setTimeout(function() {
+                if (isListening && voiceStartAttempts < 3) {
+                    voiceStartAttempts++;
+                    try { voiceRec.start(); } catch(err) {
+                        console.error('Reintento fallido:', err.message);
+                    }
+                }
+            }, 500);
+        } 
+        // Ignorar no-speech y aborted
+        else if (e.error !== 'no-speech' && e.error !== 'aborted') {
+            console.log('Voice error ignorado:', e.error);
         }
     };
 
     voiceRec.onend = function() {
+        console.log('Voice recognition ended. isListening:', isListening);
         if (isListening) {
             setTimeout(function() {
                 if (isListening) {
-                    try { voiceRec.start(); } catch(err) {}
+                    try { 
+                        voiceRec.start(); 
+                    } catch(err) {
+                        // Error "already started" - esperar y reintentar
+                        if (err.message && err.message.includes('already started')) {
+                            console.log('Recognition ya estaba activo, esperando...');
+                            setTimeout(function() {
+                                if (isListening) {
+                                    try { voiceRec.start(); } catch(err2) {}
+                                }
+                            }, 500);
+                        }
+                    }
                 }
             }, 300);
         }
@@ -1205,20 +1235,42 @@ function toggleVoice() {
 }
 
 function startVoice() {
+    if (isListening) {
+        console.log('Ya está escuchando, ignorando nueva solicitud');
+        return;
+    }
+
+    voiceStartAttempts = 0;
     try {
         document.getElementById('voiceTranscript').textContent = '';
+        document.getElementById('voiceTranscript').classList.remove('has-text');
         voiceRec.start();
-        speak('Escuchando');
+        document.getElementById('voiceStatus').textContent = 'Iniciando micrófono...';
     } catch (err) {
-        showAlert('Error al iniciar microfono: ' + err.message, 'error');
+        // "already started" - esperar y reintentar
+        if (err.message && err.message.includes('already started')) {
+            console.log('Recognition ya activo, reintentando...');
+            setTimeout(function() {
+                try { voiceRec.start(); } catch(err2) {
+                    showAlert('No se puede iniciar el micrófono. Intenta de nuevo.', 'error');
+                    isListening = false;
+                }
+            }, 1000);
+        } else {
+            showAlert('Error al iniciar micrófono: ' + err.message, 'error');
+            isListening = false;
+        }
     }
 }
 
 function stopVoice() {
     isListening = false;
-    try { voiceRec.stop(); } catch(err) {}
+    voiceStartAttempts = 0;
+    try { voiceRec.stop(); } catch(err) {
+        try { voiceRec.abort(); } catch(err2) {}
+    }
     document.getElementById('micButton').classList.remove('listening');
-    document.getElementById('voiceStatus').textContent = 'Presiona el microfono y habla';
+    document.getElementById('voiceStatus').textContent = 'Presiona el micrófono y habla';
 }
 
 function simulateVoice(text) {
